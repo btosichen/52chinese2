@@ -3,767 +3,1048 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>L2 在黑暗中乘著音樂飛翔 - 互動學習網 (大字版)</title>
+    <title>第3課：色香味的陽光｜互動教材</title>
+    <!-- 引入 React 核心 (使用 UMD 版本以支援瀏覽器直接執行) -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- 引入 Babel 用來在瀏覽器端即時解析 JSX 語法 -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- 引入 Tailwind CSS 用於快速樣式設計 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- 引入 Noto Sans TC 中文字型 -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            background: linear-gradient(135deg, #E0F7FA 0%, #FCE4EC 50%, #FFF9C4 100%);
-            background-attachment: fixed;
-            /* 基礎字體加大 */
-            font-size: 1.25rem; 
+            background: linear-gradient(135deg, #FFF9C4 0%, #DCEDC8 50%, #B3E5FC 100%);
+            overscroll-behavior: none;
+            margin: 0;
+            padding: 0;
         }
         
-        /* 超強記憶法配色系統 */
-        .mem-yellow { background-color: #FFF59D; color: #827717; padding: 4px 8px; border-radius: 6px; border-bottom: 3px solid #FBC02D; }
-        .mem-blue { color: #0277BD; font-weight: bold; border-bottom: 3px dashed #4FC3F7; }
-        .mem-green { color: #2E7D32; background-color: #E8F5E9; padding: 4px 8px; border-radius: 6px; }
-        .mem-red { color: #C62828; font-weight: bold; text-decoration: underline; text-decoration-style: wavy; }
+        /* --- 超強記憶法顏色定義 --- */
+        .mem-yellow { color: #F57F17; background-color: #FFF9C4; padding: 2px 8px; border-radius: 8px; font-weight: bold; }
+        .mem-blue { color: #0277BD; border-bottom: 4px solid #81D4FA; font-weight: bold; }
+        .mem-green { color: #2E7D32; font-style: italic; background-color: #E8F5E9; padding: 2px 8px; border-radius: 8px;}
+        .mem-red { color: #C62828; border: 2px dashed #EF9A9A; padding: 2px 6px; border-radius: 8px; font-weight: bold; }
 
-        .card {
-            background: rgba(255, 255, 255, 0.95); /* 稍微增加不透明度以提升對比 */
-            backdrop-filter: blur(10px);
-            border-radius: 24px; /* 圓角加大 */
-            box-shadow: 0 10px 40px 0 rgba(31, 38, 135, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            transition: transform 0.3s ease;
-        }
-        .card:hover { transform: translateY(-5px); }
+        /* --- 動畫效果 --- */
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .animate-spin-slow { animation: spin 8s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        .bounce { animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-10px);} 60% {transform: translateY(-5px);} }
 
-        .btn-custom {
+        /* --- 大字體優化 --- */
+        .text-huge { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.2; }
+        .text-big { font-size: clamp(1.5rem, 4vw, 2.25rem); line-height: 1.4; }
+        .text-med { font-size: clamp(1.2rem, 3vw, 1.75rem); line-height: 1.5; }
+        
+        /* --- 互動按鈕樣式 --- */
+        .btn-interact {
             transition: all 0.2s;
-            box-shadow: 0 6px 8px rgba(0,0,0,0.15); /* 陰影加深 */
+            box-shadow: 0 6px 0 #666;
+            transform: translateY(0);
+            cursor: pointer;
+            user-select: none;
         }
-        .btn-custom:active { transform: scale(0.95); }
-
-        /* 動畫效果 */
-        @keyframes popIn {
-            0% { opacity: 0; transform: scale(0.8); }
-            100% { opacity: 1; transform: scale(1); }
+        .btn-interact:active {
+            box-shadow: 0 0 0 #666;
+            transform: translateY(6px);
         }
-        .pop-in { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        
-        .correct-anim { animation: bounce 0.5s; background-color: #A5D6A7 !important; border-color: #2E7D32 !important; }
-        .wrong-anim { animation: shake 0.5s; background-color: #EF9A9A !important; border-color: #C62828 !important; }
-
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
-
-        /* 改錯字專用 - 加大點擊區 */
-        .typo-char { 
-            cursor: pointer; 
-            padding: 4px 6px; 
-            margin: 0 2px;
-            border-bottom: 3px solid transparent; 
-            transition: all 0.2s; 
-            font-size: 1.75rem; /* 字體特大 */
-            line-height: 2.5rem;
+        .cursor-wait {
+            cursor: wait;
         }
-        .typo-char:hover { background-color: #FFEBEE; border-bottom: 3px solid #EF5350; }
-        
-        /* 配對連連看 */
-        .match-selected { background-color: #B3E5FC !important; transform: scale(1.05); border: 4px solid #0288D1 !important; }
-        .match-solved { opacity: 0; pointer-events: none; transition: opacity 0.5s; }
-        
-        /* 選單按鈕專用 */
-        .menu-btn { min-height: 180px; }
     </style>
 </head>
-<body class="text-gray-800 pb-32 leading-relaxed">
+<body>
+    <div id="root"></div>
 
-<!-- 登入模態框 -->
-<div id="loginModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-    <div class="bg-white p-10 rounded-[2rem] shadow-2xl max-w-lg w-full text-center pop-in relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-full h-6 bg-gradient-to-r from-blue-400 via-pink-400 to-yellow-400"></div>
-        <div class="text-7xl mb-6">🎹</div>
-        <h2 class="text-4xl font-bold mb-4 text-indigo-600">歡迎來到<br>音樂的翅膀</h2>
-        <p class="text-xl text-gray-500 mb-8">請輸入你的名字，小書精會幫你記錄學習歷程喔！</p>
-        <input type="text" id="studentName" placeholder="例如：五年一班 王小明" class="w-full p-6 border-4 border-indigo-100 rounded-2xl mb-6 text-center focus:outline-none focus:border-indigo-400 transition text-2xl">
-        <button onclick="startApp()" class="w-full bg-indigo-500 text-white font-bold py-5 rounded-2xl hover:bg-indigo-600 transition shadow-lg text-2xl">開始冒險 🚀</button>
-    </div>
-</div>
-
-<!-- 導航列 -->
-<nav class="sticky top-0 z-40 bg-white bg-opacity-95 backdrop-blur shadow-md px-6 py-4 flex justify-between items-center">
-    <div class="flex items-center gap-3">
-        <div class="bg-indigo-100 p-3 rounded-full text-indigo-600 text-2xl"><i class="fas fa-music"></i></div>
-        <span class="font-bold text-indigo-800 text-xl hidden sm:block">在黑暗中乘著音樂飛翔</span>
-    </div>
-    <div class="flex gap-3 items-center">
-        <button onclick="showHistory()" class="bg-yellow-100 text-yellow-800 px-5 py-2 rounded-full text-lg font-bold border-2 border-yellow-300 hover:bg-yellow-200 transition">
-            <i class="fas fa-trophy mr-1"></i> 我的記錄
-        </button>
-        <span id="displayUser" class="bg-gray-100 px-5 py-2 rounded-full text-lg font-bold text-gray-600 border-2 border-gray-200">未登入</span>
-    </div>
-</nav>
-
-<!-- 主內容區 -->
-<main class="container mx-auto px-4 mt-8 max-w-5xl" id="mainApp" style="display:none;">
-
-    <!-- 影音專區 -->
-    <section class="mb-10">
-        <div class="grid md:grid-cols-2 gap-6">
-            <div class="card p-6">
-                <h3 class="font-bold text-2xl mb-4 text-indigo-600 flex items-center"><i class="fas fa-video mr-3"></i>課文引導</h3>
-                <video controls class="w-full rounded-xl shadow-lg bg-black">
-                    <source src="https://nanivideo-download.oneclass.com.tw/media/ade61c76931ba7f9/video/引導動畫/L02引導動畫_在黑暗中乘著音樂飛翔.mp4" type="video/mp4">
-                    您的瀏覽器不支援影片標籤。
-                </video>
-            </div>
-            <div class="card p-6">
-                <h3 class="font-bold text-2xl mb-4 text-pink-600 flex items-center"><i class="fas fa-headphones mr-3"></i>課文朗讀</h3>
-                <video controls class="w-full rounded-xl shadow-lg bg-black">
-                    <source src="https://nanivideo-download.oneclass.com.tw/media/ade61c76931ba7f9/video/隨文朗讀動畫/L02隨文朗讀動畫_在黑暗中乘著音樂飛翔.mp4" type="video/mp4">
-                    您的瀏覽器不支援影片標籤。
-                </video>
-            </div>
-        </div>
-    </section>
-
-    <!-- 功能選單 (Dashboard) -->
-    <div class="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-        <button onclick="switchTab('keypoints')" class="card menu-btn p-8 flex flex-col items-center justify-center hover:bg-yellow-50 cursor-pointer text-center">
-            <div class="text-6xl mb-4">🌈</div>
-            <div class="text-2xl font-bold text-gray-700">重點視覺化</div>
-        </button>
-        <button onclick="switchTab('vocab')" class="card menu-btn p-8 flex flex-col items-center justify-center hover:bg-blue-50 cursor-pointer text-center">
-            <div class="text-6xl mb-4">📝</div>
-            <div class="text-2xl font-bold text-gray-700">字詞與成語</div>
-        </button>
-        <button onclick="switchTab('typo')" class="card menu-btn p-8 flex flex-col items-center justify-center hover:bg-red-50 cursor-pointer text-center">
-            <div class="text-6xl mb-4">✏️</div>
-            <div class="text-2xl font-bold text-gray-700">錯字偵探</div>
-        </button>
-        <button onclick="switchTab('synonym')" class="card menu-btn p-8 flex flex-col items-center justify-center hover:bg-purple-50 cursor-pointer text-center">
-            <div class="text-6xl mb-4">🔄</div>
-            <div class="text-2xl font-bold text-gray-700">詞語對對碰</div>
-        </button>
-        <button onclick="switchTab('comprehension')" class="card menu-btn p-8 flex flex-col items-center justify-center hover:bg-green-50 cursor-pointer text-center">
-            <div class="text-6xl mb-4">⭕❌</div>
-            <div class="text-2xl font-bold text-gray-700">理解大考驗</div>
-        </button>
-        <button onclick="switchTab('rhetoric')" class="card menu-btn p-8 flex flex-col items-center justify-center hover:bg-pink-50 cursor-pointer text-center">
-            <div class="text-6xl mb-4">🎭</div>
-            <div class="text-2xl font-bold text-gray-700">修辭魔法師</div>
-        </button>
-    </div>
-
-    <!-- 闖關遊戲按鈕 (特別顯眼) -->
-    <button onclick="switchTab('game')" class="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-3xl p-6 shadow-xl mb-10 transform hover:scale-[1.01] transition flex items-center justify-center text-3xl font-bold border-4 border-white ring-4 ring-blue-200">
-        <span class="mr-4 text-5xl">🎮</span> 闖關挑戰：聲音飛翔任務
-    </button>
-
-    <!-- 內容展示區 -->
-    <div id="contentArea" class="relative min-h-[500px]">
+    <script type="text/babel">
+        const { useState, useEffect } = React;
         
-        <!-- 1. 重點視覺化 -->
-        <div id="view-keypoints" class="view-section hidden">
-            <div class="card p-8 bg-white">
-                <h2 class="text-3xl font-bold mb-8 text-center text-indigo-600 bg-indigo-50 py-3 rounded-xl border border-indigo-100">🌈 課文重點超強記憶</h2>
-                <div class="space-y-6">
-                    <div class="flex items-start gap-6 p-4 rounded-2xl hover:bg-gray-50 transition border border-transparent hover:border-gray-200">
-                        <div class="text-5xl">🎹</div>
-                        <div>
-                            <h4 class="font-bold text-2xl mb-2"><span class="mem-yellow">音樂無所不在</span></h4>
-                            <p class="text-gray-600 text-xl">不只是鋼琴，生活中的鍋碗瓢盆聲音也能變成音樂。</p>
-                        </div>
+        // Google Apps Script 部署網址
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_F94zepYjcV61hjVBmFWQZ6Ykh5Y2uMUbyuAdUOZtpL2fMTa4_GOCpu_iDCddhX35/exec";
+
+        // --- SVG 圖示元件 ---
+        const IconBase = ({ size = 24, color = "currentColor", className = "", children }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {children}
+            </svg>
+        );
+
+        const Sun = (props) => (
+            <IconBase {...props}>
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2" />
+                <path d="M12 20v2" />
+                <path d="m4.93 4.93 1.41 1.41" />
+                <path d="m17.66 17.66 1.41 1.41" />
+                <path d="M2 12h2" />
+                <path d="M20 12h2" />
+                <path d="m6.34 17.66-1.41-1.41" />
+                <path d="m19.07 4.93-1.41 1.41" />
+            </IconBase>
+        );
+        const BookOpen = (props) => (
+            <IconBase {...props}>
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+            </IconBase>
+        );
+        const PenTool = (props) => (
+            <IconBase {...props}>
+                <path d="m12 19 7-7 3 3-7 7-3-3z" />
+                <path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+                <path d="m2 2 7.586 7.586" />
+                <circle cx="11" cy="11" r="2" />
+            </IconBase>
+        );
+        const Youtube = (props) => (
+            <IconBase {...props}>
+                <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
+                <path d="m10 15 5-3-5-3z" />
+            </IconBase>
+        );
+        const Award = (props) => (
+            <IconBase {...props}>
+                <circle cx="12" cy="8" r="7" />
+                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+            </IconBase>
+        );
+        const UploadCloud = (props) => (
+            <IconBase {...props}>
+                <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+                <path d="M12 12v9" />
+                <path d="m16 16-4-4-4 4" />
+            </IconBase>
+        );
+        const History = (props) => (
+            <IconBase {...props}>
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+                <path d="M12 7v5l4 2" />
+            </IconBase>
+        );
+        const ArrowRight = (props) => (
+            <IconBase {...props}>
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+            </IconBase>
+        );
+        const RotateCcw = (props) => (
+            <IconBase {...props}>
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+            </IconBase>
+        );
+        const Check = (props) => (
+            <IconBase {...props}>
+                <path d="M20 6 9 17l-5-5" />
+            </IconBase>
+        );
+        const X = (props) => (
+            <IconBase {...props}>
+                <path d="M18 6 6 18" />
+                <path d="m6 6 18 18" />
+            </IconBase>
+        );
+
+        // --- 小工具：答案正規化 ---
+        const norm = (s) => (String(s ?? '').replace(/\s+/g,'').trim());
+
+        // --- 課程資料 ---
+        const lessonContent = [
+            {
+                type: 'keypoint',
+                title: '課文重點 1：陽光的秘密',
+                icon: '☀️',
+                content: (
+                    <div className="text-big text-center">
+                        <span className="mem-yellow">陽光不只是光</span>，它也有
+                        <br/><br/>
+                        <span className="mem-green">顏色、香氣、滋味</span>
                     </div>
-                    <div class="flex items-start gap-6 p-4 rounded-2xl hover:bg-gray-50 transition border border-transparent hover:border-gray-200">
-                        <div class="text-5xl">👂</div>
-                        <div>
-                            <h4 class="font-bold text-2xl mb-2"><span class="mem-green">用耳朵看世界</span></h4>
-                            <p class="text-gray-600 text-xl">黃裕翔雖然看不見，但他用<span class="mem-blue">聆聽</span>代替眼睛感受生活的美好。</p>
-                        </div>
+                ),
+                tip: '記憶口訣：色香味俱全的陽光'
+            },
+            {
+                type: 'keypoint',
+                title: '課文重點 2：想像力的魔法',
+                icon: '🌈',
+                content: (
+                    <div className="text-big text-center">
+                        作者用<span className="mem-red">想像力</span>，把
+                        <br/>
+                        看不見的陽光，變得像
+                        <br/>
+                        <span className="mem-yellow">水果一樣具體</span>
                     </div>
-                    <div class="flex items-start gap-6 p-4 rounded-2xl hover:bg-gray-50 transition border border-transparent hover:border-gray-200">
-                        <div class="text-5xl">🚪</div>
-                        <div>
-                            <h4 class="font-bold text-2xl mb-2"><span class="mem-red">上天關門必開窗</span></h4>
-                            <p class="text-gray-600 text-xl">這是一個<span class="mem-red">引用</span>修辭。意思是失去某樣東西，必定會在別的地方獲得補償。</p>
-                        </div>
+                ),
+                tip: '把抽象變具體：光 -> 水果'
+            },
+            {
+                type: 'keypoint',
+                title: '課文重點 3：顏色的象徵',
+                icon: '🎨',
+                content: (
+                    <div className="text-big text-center">
+                        顏色字不只代表顏色，
+                        <br/>
+                        也代表<span className="mem-green">心情或感受</span>。
+                        <br/><br/>
+                        例如：<span className="mem-blue">金黃色</span> = 溫暖、成熟
                     </div>
-                    <div class="flex items-start gap-6 p-4 rounded-2xl hover:bg-gray-50 transition border border-transparent hover:border-gray-200">
-                        <div class="text-5xl">🎵</div>
-                        <div>
-                            <h4 class="font-bold text-2xl mb-2"><span class="mem-yellow">聲音的感動</span></h4>
-                            <p class="text-gray-600 text-xl">聲音不只是聽見的「音」，更是心裡的感受與無限的想像。</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. 國字與成語 -->
-        <div id="view-vocab" class="view-section hidden">
-            <div class="card p-10 bg-white text-center">
-                <h2 class="text-3xl font-bold mb-8 text-blue-600">📝 字詞與成語挑戰</h2>
-                <div id="vocab-container"></div>
-            </div>
-        </div>
-
-        <!-- 3. 改錯字 -->
-        <div id="view-typo" class="view-section hidden">
-            <div class="card p-10 bg-white text-center">
-                <h2 class="text-3xl font-bold mb-6 text-red-600">✏️ 錯字小偵探</h2>
-                <p class="mb-8 text-xl text-gray-500">點擊句子中錯誤的字把它改正！</p>
-                <div id="typo-container" class="space-y-8"></div>
-            </div>
-        </div>
-
-        <!-- 4. 詞語配對 -->
-        <div id="view-synonym" class="view-section hidden">
-            <div class="card p-10 bg-white text-center">
-                <h2 class="text-3xl font-bold mb-6 text-purple-600">🔄 詞語對對碰</h2>
-                <p class="mb-8 text-xl text-gray-500">點擊一個詞，再點擊它的同義、反義詞或修辭夥伴！</p>
-                <div id="match-game" class="grid grid-cols-2 gap-6"></div>
-            </div>
-        </div>
-
-        <!-- 5. 課文理解 -->
-        <div id="view-comprehension" class="view-section hidden">
-            <div class="card p-10 bg-white text-center">
-                <h2 class="text-3xl font-bold mb-8 text-green-600">⭕❌ 理解大考驗</h2>
-                <div id="comp-container"></div>
-            </div>
-        </div>
-
-        <!-- 6. 修辭 -->
-        <div id="view-rhetoric" class="view-section hidden">
-            <div class="card p-10 bg-white text-center">
-                <h2 class="text-3xl font-bold mb-8 text-pink-600">🎭 修辭魔法師</h2>
-                <div id="rhetoric-container"></div>
-            </div>
-        </div>
-
-        <!-- 7. 闖關遊戲 -->
-        <div id="view-game" class="view-section hidden">
-            <div class="card p-10 bg-white text-center">
-                <h2 class="text-3xl font-bold mb-4 text-indigo-600">🎮 聲音飛翔任務</h2>
-                <div class="flex justify-between items-center mb-8 px-4">
-                    <span class="text-xl font-bold bg-indigo-100 text-indigo-600 px-5 py-2 rounded-full border-2 border-indigo-200">關卡 <span id="game-level">1</span>/3</span>
-                    <span class="text-xl font-bold bg-yellow-100 text-yellow-700 px-5 py-2 rounded-full border-2 border-yellow-300">得分: <span id="game-score">0</span></span>
-                </div>
-                <div id="game-stage" class="min-h-[300px] flex items-center justify-center flex-col"></div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- 延伸任務 -->
-    <div class="mt-10 card p-8 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-100">
-        <h3 class="font-bold text-2xl mb-4 text-indigo-800"><i class="fas fa-star text-yellow-400 mr-2 text-2xl"></i>加分延伸任務</h3>
-        <p class="mb-4 text-xl text-gray-700">如果我閉上眼睛，我會用聲音記住＿＿＿＿。</p>
-        <textarea id="extend-answer" class="w-full p-5 rounded-2xl border-2 border-blue-200 focus:outline-none focus:border-blue-400 text-xl shadow-inner" rows="3" placeholder="寫下你的想法..."></textarea>
-        <button onclick="submitExtension()" class="mt-4 bg-indigo-500 text-white px-8 py-3 rounded-xl text-xl font-bold hover:bg-indigo-600 transition shadow-lg w-full sm:w-auto">提交想法</button>
-    </div>
-
-</main>
-
-<!-- 歷史記錄模態框 -->
-<div id="historyModal" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50 p-4">
-    <div class="bg-white p-8 rounded-[2rem] shadow-2xl max-w-xl w-full max-h-[80vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-6">
-            <h3 class="text-2xl font-bold text-gray-800">📊 你的學習足跡</h3>
-            <button onclick="document.getElementById('historyModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-3xl px-2"><i class="fas fa-times"></i></button>
-        </div>
-        <div id="historyList" class="space-y-4"></div>
-    </div>
-</div>
-
-<!-- 回饋提示 -->
-<div id="feedbackToast" class="fixed bottom-16 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-8 py-4 rounded-full shadow-2xl z-50 transition-all duration-300 opacity-0 translate-y-10 pointer-events-none text-xl font-bold border-2 border-white">
-    <span id="feedbackIcon" class="mr-3"></span>
-    <span id="feedbackText"></span>
-</div>
-
-<script>
-    // --- 資料與設定 ---
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_F94zepYjcV61hjVBmFWQZ6Ykh5Y2uMUbyuAdUOZtpL2fMTa4_GOCpu_iDCddhX35/exec';
-    let currentUser = '';
-    let currentScore = 0;
-    
-    // 1. 字詞與成語資料庫 (整合原Vocab與成語)
-    const vocabData = [
-        // 原有題目
-        { q: "他曾多次獲得鋼琴大賽(  )軍。", opts: ["冠", "貫"], a: "冠" },
-        { q: "悠揚的琴聲(  )緩流動著。", opts: ["徐", "除"], a: "徐" },
-        { q: "徐緩的注音是？", opts: ["ㄒㄩˊ", "ㄒㄩˋ"], a: "ㄒㄩˊ" },
-        { q: "色彩(  )紛。", opts: ["繽", "濱"], a: "繽" },
-        // 新增成語選擇
-        { q: "林老師在國際舞臺上表現亮眼，在舞蹈界占有＿＿＿＿。", opts: ["一席之地", "千軍萬馬", "問道於盲"], a: "一席之地" },
-        { q: "爸爸抱起我和妹妹，對他來說＿＿＿＿。", opts: ["易如反掌", "不疾不徐", "相映成趣"], a: "易如反掌" },
-        { q: "小徑兩旁紅花綠葉，彼此襯托，看起來＿＿＿＿。", opts: ["相映成趣", "勇冠三軍", "窮途末路"], a: "相映成趣" },
-        { q: "爸爸和林叔叔認識二十多年，早就是＿＿＿＿。", opts: ["莫逆之交", "問道於盲", "轟轟烈烈"], a: "莫逆之交" },
-        // 新增成語是非 (轉為問答)
-        { q: "「不疾不徐」是形容事情進行得太快嗎？", opts: ["對", "錯"], a: "錯" },
-        { q: "「問道於盲」是形容向不懂的人請教嗎？", opts: ["對", "錯"], a: "對" },
-        { q: "「五彩繽紛」常用來形容顏色很多、很漂亮嗎？", opts: ["對", "錯"], a: "對" },
-        { q: "「前車之鑑」是提醒自己不要重蹈別人的錯誤嗎？", opts: ["對", "錯"], a: "對" }
-    ];
-
-    // 2. 改錯字資料庫
-    const typoData = [
-        { sent: "上天為我們觀上一道門，必會替我們打開另一扇窗。", wrongIndex: 5, wrongChar: "觀", correct: "關" },
-        { sent: "媽媽正在廚房洗刷鍋宛瓢盆。", wrongIndex: 9, wrongChar: "宛", correct: "碗" },
-        { sent: "他的勤聲深深迷住了大家。", wrongIndex: 2, wrongChar: "勤", correct: "琴" },
-        // 新增成語改錯
-        { sent: "他說話總是不疾不余，十分優雅。", wrongIndex: 6, wrongChar: "余", correct: "徐" },
-        { sent: "諸葛亮羽扁綸巾的形象深入人心。", wrongIndex: 4, wrongChar: "扁", correct: "扇" },
-        { sent: "這支隊伍勇貫三軍，無人能敵。", wrongIndex: 4, wrongChar: "貫", correct: "冠" },
-        { sent: "這道數學題刁讚古怪，很難算。", wrongIndex: 6, wrongChar: "讚", correct: "鑽" }
-    ];
-
-    // 3. 配對資料庫 (整合修辭配對)
-    const matchData = [
-        // 原有配對
-        { id: 1, text: "悠揚", type: "syn", pair: 2 }, { id: 2, text: "悅耳", type: "syn", pair: 1 },
-        { id: 3, text: "迷住", type: "syn", pair: 4 }, { id: 4, text: "吸引", type: "syn", pair: 3 },
-        { id: 5, text: "黑暗", type: "ant", pair: 6 }, { id: 6, text: "明亮", type: "ant", pair: 5 },
-        { id: 7, text: "徐緩", type: "ant", pair: 8 }, { id: 8, text: "急促", type: "ant", pair: 7 },
-        // 新增修辭配對
-        { id: 9, text: "行雲流水", type: "rhet", pair: 10 }, { id: 10, text: "譬喻", type: "rhet", pair: 9 },
-        { id: 11, text: "世界依然黑暗", type: "rhet", pair: 12 }, { id: 12, text: "映襯", type: "rhet", pair: 11 }
-    ];
-
-    // 4. 理解資料庫
-    const compData = [
-        { q: "黃裕翔只能用鋼琴創作音樂。", a: false },
-        { q: "生活中的聲音也能成為音樂素材。", a: true },
-        { q: "黃裕翔雖然看不見，但他用耳朵感受世界。", a: true },
-        // 新增綜合題
-        { q: "下列哪一句最符合〈在黑暗中乘著音樂飛翔〉的寫作特色？", opts: ["用感覺描寫音樂，彷彿聽見聲音", "詳細說明樂理知識", "直接列出演奏技巧"], a: "用感覺描寫音樂，彷彿聽見聲音" }
-    ];
-
-    // 5. 修辭資料庫
-    const rhetoricData = [
-        { q: "「掌聲才如雷般的響起」運用了什麼修辭？", opts: ["譬喻", "擬人", "排比"], a: "譬喻" },
-        { q: "引用名言「上天為我們關上一道門...」是為了？", opts: ["增加字數", "支持觀點", "練習寫字"], a: "支持觀點" },
-        // 新增修辭題
-        { q: "「十根手指在黑白琴鍵上輕輕舞動。」主要使用哪一種修辭？", opts: ["疊字", "排比", "引用"], a: "疊字" }, // 依據題意選項調整，若強調「輕輕」則為疊字
-        { q: "「樂聲摸著黑四處流轉。」使用的修辭是？", opts: ["譬喻", "擬人", "誇飾"], a: "擬人" },
-        // 新增修辭是非
-        { q: "「輕輕舞動、深深迷住」使用了疊字修辭。", a: true },
-        { q: "「音樂引領他推開窗，飛向另一個世界。」把音樂當成人來寫(擬人)。", a: true },
-        { q: "「轟隆隆的火車聲、嘩啦啦的雨滴聲、歡笑聲」屬於排比。", a: true }
-    ];
-
-    const gameData = [
-        { 
-            type: "select", 
-            q: "關卡 1：找出課文中的「聲音描寫」", 
-            opts: ["七彩繽紛", "轟隆隆", "黑漆漆"], 
-            a: "轟隆隆",
-            hint: "找找看哪個詞有聲音的感覺？"
-        },
-        { 
-            type: "select", 
-            q: "關卡 2：黃裕翔在大賣場喜歡敲打什麼當樂器？", 
-            opts: ["西瓜", "鍋碗瓢盆", "電視機"], 
-            a: "鍋碗瓢盆",
-            hint: "在廚具區會看到什麼？"
-        },
-        { 
-            type: "select", 
-            q: "關卡 3：「音樂無所不在」這句話用了什麼修辭來強調？", 
-            opts: ["設問", "引用", "誇飾"], 
-            a: "引用",
-            hint: "這是引用誰說過的話呢？"
-        }
-    ];
-
-    // --- 應用程式邏輯 ---
-
-    function startApp() {
-        const name = document.getElementById('studentName').value.trim();
-        if (!name) return alert("請輸入名字喔！");
-        
-        currentUser = name;
-        document.getElementById('displayUser').textContent = name;
-        document.getElementById('displayUser').className = "bg-indigo-100 px-5 py-2 rounded-full text-lg font-bold text-indigo-600 border-2 border-indigo-200";
-        document.getElementById('loginModal').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'block';
-        document.getElementById('mainApp').classList.add('pop-in');
-        
-        // 初始化各單元
-        initVocab();
-        initTypo();
-        initMatch();
-        initComp();
-        initRhetoric();
-        initGame();
-    }
-
-    function switchTab(tabId) {
-        document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-        document.getElementById('view-' + tabId).classList.remove('hidden');
-        document.getElementById('view-' + tabId).classList.add('pop-in');
-        
-        // 滾動到內容區
-        document.getElementById('contentArea').scrollIntoView({behavior: 'smooth', block: 'start'});
-    }
-
-    function showFeedback(msg, type) {
-        const toast = document.getElementById('feedbackToast');
-        const text = document.getElementById('feedbackText');
-        const icon = document.getElementById('feedbackIcon');
-        
-        toast.className = `fixed bottom-16 left-1/2 transform -translate-x-1/2 px-8 py-4 rounded-full shadow-2xl z-50 transition-all duration-300 translate-y-0 opacity-100 ${type === 'success' ? 'bg-green-600' : 'bg-orange-500'} text-white text-xl font-bold border-2 border-white`;
-        
-        icon.innerHTML = type === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-lightbulb"></i>';
-        text.innerText = msg;
-
-        setTimeout(() => {
-            toast.classList.add('opacity-0', 'translate-y-10');
-        }, 2000);
-    }
-
-    // --- 各單元實作 ---
-
-    // 1. 字詞與成語 (Vocab & Idioms)
-    function initVocab() {
-        const container = document.getElementById('vocab-container');
-        let currentIdx = 0;
-        let correctCount = 0;
-
-        function render() {
-            if (currentIdx >= vocabData.length) {
-                container.innerHTML = `<div class="text-3xl font-bold text-indigo-600 mb-6">🎉 完成挑戰！<br>答對 ${correctCount}/${vocabData.length} 題</div>
-                <button onclick="initVocab()" class="mt-4 bg-gray-200 px-8 py-3 rounded-xl text-xl font-bold hover:bg-gray-300">再玩一次</button>`;
-                saveRecord('字詞與成語', correctCount, vocabData.length - correctCount);
-                return;
+                ),
+                tip: '看到顏色 -> 想到心情'
             }
-            const q = vocabData[currentIdx];
-            
-            // 動態調整字體大小，如果選項字數多(如成語)，字體變小
-            const isLongText = q.opts.some(opt => opt.length > 2);
-            const btnClass = isLongText 
-                ? "btn-custom bg-white border-4 border-blue-200 text-2xl w-48 h-32 rounded-3xl hover:bg-blue-50 font-bold text-blue-700 mx-2"
-                : "btn-custom bg-white border-4 border-blue-200 text-5xl w-32 h-32 rounded-3xl hover:bg-blue-50 font-bold text-blue-700";
+        ];
 
-            container.innerHTML = `
-                <div class="text-3xl mb-10 font-bold bg-blue-50 p-8 rounded-2xl inline-block border-4 border-blue-100 leading-relaxed">${q.q}</div>
-                <div class="flex flex-wrap justify-center gap-6">
-                    ${q.opts.map(opt => `<button onclick="checkVocab('${opt}', '${q.a}')" class="${btnClass}">${opt}</button>`).join('')}
-                </div>
-            `;
-        }
-
-        window.checkVocab = (ans, correct) => {
-            if (ans === correct) {
-                showFeedback("答對了！", "success");
-                correctCount++;
-            } else {
-                showFeedback("再想一想喔！", "hint");
+        // --- 題庫資料：原本快速暖身 ---
+        const warmupQuizData = [
+            {
+                id: 1,
+                type: 'choice',
+                question: '伯伯的臉色看起來像芭樂那麼____。',
+                options: ['綠', '錄'],
+                answer: '綠',
+                explanation: '「綠」色是顏色；「錄」音是動作。',
+                category: '國字辨識'
+            },
+            {
+                id: 2,
+                type: 'choice',
+                question: '「青澀」的正確注音是？',
+                options: ['ㄑㄧㄥ ㄙㄜˋ', 'ㄑㄧㄥ ㄕㄜˋ'],
+                answer: 'ㄑㄧㄥ ㄙㄜˋ',
+                explanation: '澀 (ㄙㄜˋ) 只有一個讀音喔！',
+                category: '注音練習'
+            },
+            {
+                id: 3,
+                type: 'boolean',
+                question: '作者真的看到陽光是綠色的嗎？',
+                options: ['○ (是真的)', '✕ (是想像)'],
+                answer: '✕ (是想像)',
+                explanation: '這是作者透過樹葉感受到的「想像」畫面。',
+                category: '課文理解'
+            },
+            {
+                id: 4,
+                type: 'drag', 
+                question: '「陽光像金色的大網」運用了哪種修辭？',
+                options: ['擬人', '譬喻', '設問'],
+                answer: '譬喻',
+                explanation: '有「像...」就是譬喻法。',
+                category: '修辭技巧'
+            },
+            {
+                id: 5,
+                type: 'choice',
+                question: '「說不定是綠油油的吧？」這句話是？',
+                options: ['設問', '擬人'],
+                answer: '設問',
+                explanation: '心中有疑問，或是自問自答，就是設問。',
+                category: '修辭技巧'
+            },
+            {
+                id: 6,
+                type: 'choice',
+                question: '「清甜」的相反詞（反義詞）是？',
+                options: ['甘甜', '苦澀'],
+                answer: '苦澀',
+                explanation: '清甜是好吃的味道，苦澀是不好吃的。',
+                category: '詞語關係'
             }
-            currentIdx++;
-            setTimeout(render, 800);
+        ];
+
+        // --- 題庫資料：課文理解挑戰（你提供的 19 題：成語＋修辭）---
+        const comprehensionChallengeData = [
+            // 成語選擇題 1-4
+            {
+                id: 101,
+                type: 'choice',
+                question: '果園裡的水果顏色鮮豔，看起來＿＿＿＿。',
+                options: ['A 五彩繽紛','B 問道於盲','C 窮途末路','D 一席之地'],
+                answer: 'A 五彩繽紛',
+                explanation: '完成！',
+                category: '課文理解挑戰｜成語'
+            },
+            {
+                id: 102,
+                type: 'choice',
+                question: '這次園遊會準備得很充分，大家都覺得活動會辦得＿＿＿＿。',
+                options: ['A 勇冠三軍','B 轟轟烈烈','C 血盆大口','D 刁鑽古怪'],
+                answer: 'B 轟轟烈烈',
+                explanation: '完成！',
+                category: '課文理解挑戰｜成語'
+            },
+            {
+                id: 103,
+                type: 'choice',
+                question: '老師提醒我們要記取前人的錯誤，當作＿＿＿＿。',
+                options: ['A 莫逆之交','B 前車之鑑','C 險遭不測','D 易如反掌'],
+                answer: 'B 前車之鑑',
+                explanation: '完成！',
+                category: '課文理解挑戰｜成語'
+            },
+            {
+                id: 104,
+                type: 'choice',
+                question: '果樹下的陽光灑落在地面，和綠葉互相襯托，顯得＿＿＿＿。',
+                options: ['A 相映成趣','B 千軍萬馬','C 窮途末路','D 問道於盲'],
+                answer: 'A 相映成趣',
+                explanation: '完成！',
+                category: '課文理解挑戰｜成語'
+            },
+
+            // 成語是非題 5-7
+            {
+                id: 105,
+                type: 'boolean',
+                question: '「五彩繽紛」可以用來形容顏色很多、很漂亮的景象。',
+                options: ['○','✕'],
+                answer: '○',
+                explanation: '完成！',
+                category: '課文理解挑戰｜成語'
+            },
+            {
+                id: 106,
+                type: 'boolean',
+                question: '「前車之鑑」是指事情進行得很順利。',
+                options: ['○','✕'],
+                answer: '✕',
+                explanation: '完成！',
+                category: '課文理解挑戰｜成語'
+            },
+            {
+                id: 107,
+                type: 'boolean',
+                question: '「轟轟烈烈」常用來形容事情的聲勢很大。',
+                options: ['○','✕'],
+                answer: '○',
+                explanation: '完成！',
+                category: '課文理解挑戰｜成語'
+            },
+
+            // 找出錯字並改正 8-10（改成可輸入作答）
+            {
+                id: 108,
+                type: 'input',
+                question: '找出錯字並改正：五采繽紛 → （　　　）',
+                answer: '五彩繽紛',
+                explanation: '完成！',
+                category: '課文理解挑戰｜成語'
+            },
+            {
+                id: 109,
+                type: 'input',
+                question: '找出錯字並改正：前車之監 → （　　　）',
+                answer: '前車之鑑',
+                explanation: '完成！',
+                category: '課文理解挑戰｜成語'
+            },
+            {
+                id: 110,
+                type: 'input',
+                question: '找出錯字並改正：相應成趣 → （　　　）',
+                answer: '相映成趣',
+                explanation: '完成！',
+                category: '課文理解挑戰｜成語'
+            },
+
+            // 修辭辨識 11-13
+            {
+                id: 111,
+                type: 'choice',
+                question: '「陽光像金雨般密密的灑下來。」這一句使用了哪一種修辭？',
+                options: ['A 擬人','B 明喻','C 排比','D 感嘆'],
+                answer: 'B 明喻',
+                explanation: '完成！',
+                category: '課文理解挑戰｜修辭'
+            },
+            {
+                id: 112,
+                type: 'choice',
+                question: '「枝頭多了幾個紅色的小鈴鐺，在風裡輕輕哼唱。」這一句主要使用的修辭是：',
+                options: ['A 疊字','B 譬喻','C 擬人','D 排比'],
+                answer: 'C 擬人',
+                explanation: '完成！',
+                category: '課文理解挑戰｜修辭'
+            },
+            {
+                id: 113,
+                type: 'choice',
+                question: '「葡萄變紫了，木瓜變黃了，芭樂也變翠綠了。」這一句使用了哪一種修辭？',
+                options: ['A 排比','B 設問','C 誇飾','D 引用'],
+                answer: 'A 排比',
+                explanation: '完成！',
+                category: '課文理解挑戰｜修辭'
+            },
+
+            // 修辭是非題 14-16
+            {
+                id: 114,
+                type: 'boolean',
+                question: '「靜悄悄、綠油油、圓圓點點」屬於疊字修辭。',
+                options: ['○','✕'],
+                answer: '○',
+                explanation: '完成！',
+                category: '課文理解挑戰｜修辭'
+            },
+            {
+                id: 115,
+                type: 'boolean',
+                question: '「我想，葡萄藤上的陽光可能是紫色的吧？」是設問句。',
+                options: ['○','✕'],
+                answer: '○',
+                explanation: '完成！',
+                category: '課文理解挑戰｜修辭'
+            },
+            {
+                id: 116,
+                type: 'boolean',
+                question: '「陽光張開翅膀，在果樹上盤旋。」把陽光當成人來寫。',
+                options: ['○','✕'],
+                answer: '○',
+                explanation: '完成！',
+                category: '課文理解挑戰｜修辭'
+            },
+
+            // 修辭配對 17-18
+            {
+                id: 117,
+                type: 'choice',
+                question: '「張口一咬，一股青澀味像條青竹絲，火速鑽進嘴裡。」最符合的修辭是：',
+                options: ['A 明喻','B 暗喻','C 擬人','D 排比'],
+                answer: 'A 明喻',
+                explanation: '完成！',
+                category: '課文理解挑戰｜修辭'
+            },
+            {
+                id: 118,
+                type: 'choice',
+                question: '「陽光把我的臉晒得比蓮霧還要紅。」這一句使用了：',
+                options: ['A 誇飾','B 設問','C 引用','D 排比'],
+                answer: 'A 誇飾',
+                explanation: '完成！',
+                category: '課文理解挑戰｜修辭'
+            },
+
+            // 綜合 19
+            {
+                id: 119,
+                type: 'choice',
+                question: '下列哪一句最符合〈色香味的陽光〉的寫作特色？',
+                options: ['A 用顏色、氣味和味道描寫陽光','B 詳細說明水果的生長過程','C 介紹農業知識','D 說明果園的歷史'],
+                answer: 'A 用顏色、氣味和味道描寫陽光',
+                explanation: '完成！',
+                category: '課文理解挑戰｜綜合'
+            }
+        ];
+
+        // --- 元件：登入畫面 ---
+        const LoginScreen = ({ onLogin }) => {
+            const [name, setName] = useState('');
+            return (
+                <div className="flex flex-col items-center gap-8 w-full max-w-lg fade-in">
+                    <div className="text-huge font-bold text-center text-orange-600">
+                        歡迎來到<br/>第 3 課
+                    </div>
+                    <div className="w-full bg-white p-8 rounded-3xl shadow-xl border-4 border-yellow-200">
+                        <label className="block text-2xl font-bold mb-4 text-gray-700 text-center">請問你叫什麼名字？</label>
+                        <input 
+                            type="text" 
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full p-6 text-3xl text-center border-4 border-blue-200 rounded-2xl focus:border-blue-500 outline-none transition-colors bg-blue-50"
+                            placeholder="輸入姓名"
+                        />
+                        <button 
+                            onClick={() => onLogin(name)}
+                            className="mt-8 w-full bg-green-500 hover:bg-green-600 text-white text-3xl font-bold py-6 rounded-2xl btn-interact flex justify-center items-center gap-3"
+                        >
+                            開始上課 <ArrowRight size={36} />
+                        </button>
+                    </div>
+                </div>
+            );
         };
-        render();
-    }
 
-    // 2. 改錯字
-    function initTypo() {
-        const container = document.getElementById('typo-container');
-        container.innerHTML = '';
-        let correctCount = 0;
-        let attempts = 0;
+        // --- 元件：主選單 ---
+        const MainMenu = ({ setView, localHistory, studentName }) => {
+            const [showHistory, setShowHistory] = useState(false);
+            const myHistory = localHistory.filter(h => h.name === studentName);
 
-        typoData.forEach((item, idx) => {
-            const div = document.createElement('div');
-            div.className = "bg-gray-50 p-6 rounded-2xl border-2 border-gray-200 tracking-wider";
-            
-            // 構建句子，每個字都是可點擊的
-            let html = '';
-            for(let i=0; i<item.sent.length; i++) {
-                html += `<span class="typo-char" onclick="checkTypo(this, ${idx}, ${i})">${item.sent[i]}</span>`;
+            if (showHistory) {
+                return (
+                    <div className="w-full h-full flex flex-col fade-in">
+                         <h2 className="text-4xl font-bold text-center mb-6 text-blue-800">📜 {studentName} 的學習紀錄</h2>
+                         <div className="flex-1 overflow-y-auto bg-white rounded-2xl border-4 border-blue-200 p-4 shadow-inner max-h-[60vh]">
+                            {myHistory.length === 0 ? (
+                                <p className="text-2xl text-center text-gray-400 py-10">還沒有紀錄喔，快去挑戰！</p>
+                            ) : (
+                                <table className="w-full text-xl md:text-2xl">
+                                    <thead className="bg-blue-100 text-blue-800">
+                                        <tr>
+                                            <th className="p-3 text-left">時間</th>
+                                            <th className="p-3 text-center">分數</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {myHistory.map((rec, idx) => (
+                                            <tr key={idx} className="border-b border-gray-100">
+                                                <td className="p-3 text-gray-600 text-lg">{rec.date.split(' ')[0]} <br/> <span className="text-sm">{rec.date.split(' ')[1]}</span></td>
+                                                <td className="p-3 text-center font-bold text-orange-600">{rec.score} 分</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                         </div>
+                         <button onClick={() => setShowHistory(false)} className="mt-6 bg-gray-500 text-white text-2xl py-4 rounded-xl btn-interact">
+                            返回選單
+                         </button>
+                    </div>
+                );
             }
-            div.innerHTML = html;
-            div.id = `typo-row-${idx}`;
-            container.appendChild(div);
-        });
 
-        window.checkTypo = (span, itemIdx, charIdx) => {
-            const q = typoData[itemIdx];
-            if (charIdx === q.wrongIndex) {
-                span.innerText = q.correct;
-                span.className = "text-red-600 font-bold border-b-4 border-red-500 pb-1 mx-1 px-2 bg-red-50 rounded text-3xl";
-                span.onclick = null; // 移除點擊事件
-                showFeedback("太棒了！小偵探找到錯字了！", "success");
-                
-                // 顯示解釋
-                const explain = document.createElement('div');
-                explain.className = "mt-4 text-lg text-gray-600 bg-white p-3 rounded-xl shadow-sm inline-block border border-gray-100";
-                explain.innerHTML = `<i class="fas fa-info-circle text-blue-400 mr-2"></i> 原字「${q.wrongChar}」是錯誤的，應改為「${q.correct}」。`;
-                document.getElementById(`typo-row-${itemIdx}`).appendChild(explain);
-
-                correctCount++;
-                if(correctCount === typoData.length) saveRecord('錯字偵探', correctCount, attempts);
-            } else {
-                span.classList.add('wrong-anim');
-                setTimeout(() => span.classList.remove('wrong-anim'), 500);
-                showFeedback("這裡沒有錯字喔，再找找看！", "hint");
-                attempts++;
-            }
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl fade-in">
+                    <MenuButton 
+                        color="bg-red-400" 
+                        icon={<Youtube size={48} />} 
+                        title="影片觀賞" 
+                        sub="引導、朗讀、作者動畫"
+                        onClick={() => setView('video')} 
+                    />
+                    <MenuButton 
+                        color="bg-yellow-400" 
+                        icon={<BookOpen size={48} />} 
+                        title="重點整理" 
+                        sub="超強記憶法"
+                        onClick={() => setView('study')} 
+                    />
+                    <MenuButton 
+                        color="bg-green-500" 
+                        icon={<PenTool size={48} />} 
+                        title="互動挑戰" 
+                        sub="先選題組再開打"
+                        onClick={() => setView('quiz')} 
+                    />
+                    <MenuButton 
+                        color="bg-blue-400" 
+                        icon={<History size={48} />} 
+                        title="學習紀錄" 
+                        sub="查看我的成績"
+                        onClick={() => setShowHistory(true)} 
+                    />
+                </div>
+            );
         };
-    }
 
-    // 3. 詞語配對 (Click to Match)
-    function initMatch() {
-        const container = document.getElementById('match-game');
-        // 洗牌
-        const shuffled = [...matchData].sort(() => Math.random() - 0.5);
-        container.innerHTML = '';
-        let selected = null;
-        let matches = 0;
-        let errors = 0;
+        const MenuButton = ({ color, icon, title, sub, onClick }) => (
+            <button 
+                onClick={onClick}
+                className={`${color} text-white p-8 rounded-3xl btn-interact flex flex-col items-center justify-center gap-4 h-48 md:h-64`}
+            >
+                <div className="bg-white/20 p-4 rounded-full">{icon}</div>
+                <div>
+                    <div className="text-3xl md:text-4xl font-bold">{title}</div>
+                    <div className="text-xl opacity-90 mt-1">{sub}</div>
+                </div>
+            </button>
+        );
 
-        shuffled.forEach(item => {
-            const btn = document.createElement('button');
-            // 動態字體：如果字數多(如成語、修辭句)，字體稍微縮小
-            const fontSize = item.text.length > 4 ? "text-xl" : "text-2xl";
-            
-            btn.className = `btn-custom bg-white border-2 border-purple-200 text-gray-700 p-4 rounded-2xl font-bold ${fontSize} hover:bg-purple-50 min-h-[100px] flex items-center justify-center`;
-            btn.innerText = item.text;
-            btn.dataset.id = item.id;
-            btn.dataset.pair = item.pair;
-            
-            btn.onclick = () => {
-                if (selected === btn) { // 取消選取
-                    btn.classList.remove('match-selected');
-                    selected = null;
-                    return;
-                }
+        // --- 元件：影片區 ---
+        const VideoSection = ({ onBack }) => {
+            const [tab, setTab] = useState(0);
+            const videos = [
+                { title: '引導動畫', url: 'https://nanivideo-download.oneclass.com.tw/media/ade61c76931ba7f9/video/引導動畫/L03引導動畫_色香味的陽光.mp4' },
+                { title: '課文朗讀', url: 'https://nanivideo-download.oneclass.com.tw/media/ade61c76931ba7f9/video/隨文朗讀動畫/L03隨文朗讀動畫_色香味的陽光.mp4' },
+                { title: '作者動畫', url: 'https://nanivideo-download.oneclass.com.tw/media/ade61c76931ba7f9/video/作者動畫/L03作者動畫_林芳萍.mp4' }
+            ];
 
-                if (!selected) {
-                    selected = btn;
-                    btn.classList.add('match-selected');
-                } else {
-                    // 檢查配對
-                    if (selected.dataset.pair == btn.dataset.id) {
-                        // 配對成功
-                        selected.classList.add('correct-anim', 'bg-green-200', 'border-green-500');
-                        btn.classList.add('correct-anim', 'bg-green-200', 'border-green-500');
-                        showFeedback("配對成功！", "success");
+            return (
+                <div className="w-full h-full flex flex-col fade-in">
+                    <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+                        {videos.map((v, i) => (
+                            <button 
+                                key={i}
+                                onClick={() => setTab(i)}
+                                className={`px-6 py-3 rounded-xl text-xl font-bold whitespace-nowrap transition-colors ${tab === i ? 'bg-red-500 text-white shadow-lg' : 'bg-white text-gray-600 border-2 border-gray-200'}`}
+                            >
+                                {v.title}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="flex-1 bg-black rounded-2xl overflow-hidden shadow-2xl border-4 border-gray-800">
+                        <video 
+                            key={videos[tab].url}
+                            controls 
+                            className="w-full h-full object-contain"
+                            poster="https://placehold.co/800x450/333/FFF?text=Loading+Video..."
+                        >
+                            <source src={videos[tab].url} type="video/mp4" />
+                            瀏覽器不支援影片播放
+                        </video>
+                    </div>
+                    <button onClick={onBack} className="mt-6 bg-gray-500 text-white text-2xl py-3 rounded-xl btn-interact w-full">
+                        返回選單
+                    </button>
+                </div>
+            );
+        };
+
+        // --- 元件：重點學習區 ---
+        const StudySection = ({ onBack }) => {
+            const [page, setPage] = useState(0);
+
+            return (
+                <div className="w-full max-w-4xl flex flex-col items-center fade-in">
+                    <div className="w-full bg-white p-8 md:p-12 rounded-[3rem] shadow-2xl border-b-8 border-yellow-500 min-h-[50vh] flex flex-col items-center justify-center relative">
+                        <div className="absolute top-6 right-6 text-6xl animate-bounce">
+                            {lessonContent[page].icon}
+                        </div>
                         
-                        const s = selected;
-                        const b = btn;
-                        setTimeout(() => {
-                            s.classList.add('match-solved');
-                            b.classList.add('match-solved');
-                        }, 500);
+                        <h2 className="text-3xl md:text-4xl font-bold mb-8 text-gray-800 border-b-4 border-yellow-200 pb-2">
+                            {lessonContent[page].title}
+                        </h2>
                         
-                        matches++;
-                        selected = null;
-                        if(matches === matchData.length / 2) {
-                            saveRecord('詞語配對', matches, errors);
-                            setTimeout(() => {
-                                container.innerHTML = `<div class="col-span-2 text-center text-3xl font-bold text-purple-600 p-8">🎉 全部配對完成！</div>`;
-                            }, 1000);
-                        }
+                        <div className="mb-10 w-full">
+                            {lessonContent[page].content}
+                        </div>
+
+                        <div className="bg-blue-50 border-2 border-blue-200 p-4 rounded-xl w-full text-center">
+                            <span className="font-bold text-blue-600 text-xl">💡 超強記憶小撇步：</span>
+                            <p className="text-2xl text-gray-700 mt-2">{lessonContent[page].tip}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-4 mt-8 w-full">
+                        <button 
+                            onClick={onBack}
+                            className="flex-1 bg-gray-400 text-white text-2xl py-4 rounded-2xl btn-interact"
+                        >
+                            回選單
+                        </button>
+                        <button 
+                            onClick={() => setPage((prev) => (prev + 1) % lessonContent.length)}
+                            className="flex-[2] bg-yellow-400 text-yellow-900 text-3xl font-bold py-4 rounded-2xl btn-interact flex items-center justify-center gap-2"
+                        >
+                            下一個重點 <ArrowRight />
+                        </button>
+                    </div>
+                    
+                    <div className="mt-4 flex gap-2">
+                        {lessonContent.map((_, i) => (
+                            <div key={i} className={`h-3 w-3 rounded-full ${i === page ? 'bg-yellow-500 scale-125' : 'bg-gray-300'}`}></div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 元件：測驗區（新增：題組選擇 + input 題型） ---
+        const QuizSection = ({ questionSets, onComplete, onBack }) => {
+            const [phase, setPhase] = useState('select'); // select | play
+            const [setKey, setSetKey] = useState(null);
+
+            const [idx, setIdx] = useState(0);
+            const [feedback, setFeedback] = useState(null); 
+            const [history, setHistory] = useState([]);
+            const [currentScore, setCurrentScore] = useState(0);
+            const [inputAns, setInputAns] = useState('');
+
+            const questions = setKey ? questionSets[setKey].questions : [];
+            const q = questions[idx];
+
+            const resetRun = (newKey) => {
+                setSetKey(newKey);
+                setPhase('play');
+                setIdx(0);
+                setFeedback(null);
+                setHistory([]);
+                setCurrentScore(0);
+                setInputAns('');
+            };
+
+            const handleAnswer = (option) => {
+                if (feedback) return;
+
+                const isCorrect = norm(option) === norm(q.answer);
+                setFeedback(isCorrect ? 'correct' : 'wrong');
+
+                const newHistory = [...history, { 
+                    question: q.question, 
+                    userAns: option, 
+                    correctAns: q.answer, 
+                    correct: isCorrect 
+                }];
+                setHistory(newHistory);
+
+                if (isCorrect) setCurrentScore(prev => prev + 100/questions.length);
+
+                setTimeout(() => {
+                    setFeedback(null);
+                    setInputAns('');
+                    if (idx < questions.length - 1) {
+                        setIdx(idx + 1);
                     } else {
-                        // 配對失敗
-                        btn.classList.add('wrong-anim');
-                        selected.classList.add('wrong-anim');
-                        showFeedback("這兩個不是一對喔！", "hint");
-                        errors++;
-                        setTimeout(() => {
-                            btn.classList.remove('wrong-anim');
-                            selected.classList.remove('wrong-anim', 'match-selected');
-                            selected = null;
-                        }, 800);
+                        const finalScore = Math.round(isCorrect ? currentScore + 100/questions.length : currentScore);
+                        onComplete(finalScore, newHistory, questionSets[setKey].title);
                     }
+                }, 1800);
+            };
+
+            const submitInput = () => {
+                if (feedback) return;
+                handleAnswer(inputAns);
+            };
+
+            if (phase === 'select') {
+                return (
+                    <div className="w-full max-w-3xl fade-in">
+                        <h2 className="text-4xl font-black text-center text-green-700 mb-3">🎯 互動挑戰</h2>
+                        <p className="text-xl text-center text-gray-700 mb-8">先選一個題組：你要暖身，還是直接開大招？</p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {Object.entries(questionSets).map(([key, pack]) => (
+                                <button
+                                    key={key}
+                                    onClick={() => resetRun(key)}
+                                    className={`p-8 rounded-3xl btn-interact text-left border-4 ${
+                                        key === 'challenge'
+                                            ? 'bg-purple-600 text-white border-purple-200'
+                                            : 'bg-white text-gray-800 border-green-200'
+                                    }`}
+                                >
+                                    <div className="text-3xl font-black mb-2">{pack.title}</div>
+                                    <div className="text-xl opacity-95 mb-4">{pack.sub}</div>
+                                    <div className="inline-flex items-center gap-2 bg-black/10 px-4 py-2 rounded-xl text-lg font-bold">
+                                        題數：{pack.questions.length} 題 <ArrowRight />
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+
+                        <button onClick={onBack} className="mt-8 text-gray-600 text-xl underline block mx-auto">
+                            不玩了（先回選單）
+                        </button>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="w-full max-w-3xl flex flex-col fade-in">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="text-xl font-black text-gray-700">
+                            題組：<span className="text-green-700">{questionSets[setKey].title}</span>
+                        </div>
+                        <button
+                            onClick={() => setPhase('select')}
+                            className="text-lg text-gray-600 underline"
+                        >
+                            換題組
+                        </button>
+                    </div>
+
+                    <div className="w-full bg-gray-200 rounded-full h-4 mb-6">
+                        <div className="bg-green-500 h-4 rounded-full transition-all duration-500" style={{ width: `${((idx)/questions.length)*100}%` }}></div>
+                    </div>
+
+                    <div className="bg-white rounded-[2rem] p-8 shadow-xl border-4 border-green-100 relative overflow-hidden">
+                        {feedback && (
+                            <div className={`absolute inset-0 flex flex-col items-center justify-center z-10 bg-opacity-95 ${feedback === 'correct' ? 'bg-green-100' : 'bg-red-100'}`}>
+                                <div className={`text-9xl mb-4 ${feedback === 'correct' ? 'animate-bounce' : 'animate-pulse'}`}>
+                                    {feedback === 'correct' ? '⭕' : '❌'}
+                                </div>
+                                <h2 className={`text-4xl font-bold ${feedback === 'correct' ? 'text-green-600' : 'text-red-600'}`}>
+                                    {feedback === 'correct' ? '太棒了！答對了！' : '哎呀，再想一下！'}
+                                </h2>
+                                <p className="text-2xl mt-4 text-gray-700 px-8 text-center">
+                                    {q.type === 'input'
+                                        ? (feedback === 'correct' ? 'Nice！你打得很準～' : `正確答案是：${q.answer}`)
+                                        : (q.explanation || '')
+                                    }
+                                </p>
+                            </div>
+                        )}
+
+                        <div className="flex justify-between items-center mb-6">
+                            <span className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-bold text-xl">
+                                Q{idx + 1} / {questions.length} - {q.category}
+                            </span>
+                        </div>
+
+                        <h3 className="text-med font-bold text-gray-800 mb-10 leading-relaxed">
+                            {q.question}
+                        </h3>
+
+                        {/* 題型：輸入 */}
+                        {q.type === 'input' ? (
+                            <div className="space-y-5">
+                                <input
+                                    value={inputAns}
+                                    disabled={!!feedback}
+                                    onChange={(e) => setInputAns(e.target.value)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') submitInput(); }}
+                                    className="w-full p-6 text-3xl text-center border-4 border-purple-200 rounded-2xl focus:border-purple-500 outline-none transition-colors bg-purple-50"
+                                    placeholder="在這裡輸入答案"
+                                />
+                                <button
+                                    onClick={submitInput}
+                                    disabled={!!feedback}
+                                    className="w-full bg-purple-600 hover:bg-purple-700 text-white text-3xl font-black py-6 rounded-2xl btn-interact"
+                                >
+                                    送出答案 <ArrowRight size={28} />
+                                </button>
+                                <p className="text-center text-gray-500 text-lg">
+                                    小提示：可以直接按 Enter 送出～
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {q.options.map((opt, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => handleAnswer(opt)}
+                                        className="bg-white border-4 border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-gray-700 font-bold text-2xl md:text-3xl py-8 px-4 rounded-2xl btn-interact text-center"
+                                    >
+                                        {opt}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    
+                    <button onClick={onBack} className="mt-8 text-gray-500 text-xl underline self-center">
+                        暫停，回選單
+                    </button>
+                </div>
+            );
+        };
+
+        // --- 元件：結果與結算區 ---
+        const ResultScreen = ({ score, total, history, onRestart, onUpload, uploadStatus, studentName, packTitle }) => {
+            return (
+                <div className="w-full max-w-3xl flex flex-col items-center fade-in pb-10">
+                    <div className="relative">
+                        <Award size={120} className="text-yellow-500 mb-4 animate-bounce" />
+                        <div className="absolute top-0 right-0 -mr-4 mt-2">✨</div>
+                        <div className="absolute bottom-0 left-0 -ml-4 mb-2">🎉</div>
+                    </div>
+                    
+                    <h2 className="text-5xl font-bold text-gray-800 mb-2">恭喜完成！</h2>
+                    <p className="text-2xl text-gray-600 mb-2">{studentName}，你剛剛通關了：</p>
+                    <p className="text-3xl font-black text-green-700 mb-6">「{packTitle}」</p>
+                    
+                    <div className="bg-white p-8 rounded-3xl shadow-xl border-4 border-yellow-400 w-full text-center mb-8">
+                        <div className="text-2xl text-gray-500 mb-2">本次得分</div>
+                        <div className="text-8xl font-black text-red-500">{score}</div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-8">
+                        <button 
+                            onClick={onUpload}
+                            disabled={uploadStatus === 'success' || uploadStatus === 'uploading'}
+                            className={`py-4 px-6 rounded-2xl text-2xl font-bold flex items-center justify-center gap-2 btn-interact ${
+                                uploadStatus === 'success' ? 'bg-green-500 text-white' : 
+                                uploadStatus === 'uploading' ? 'bg-gray-400 text-white cursor-wait' :
+                                'bg-blue-600 text-white'
+                            }`}
+                        >
+                            {uploadStatus === 'idle' && <><UploadCloud size={32} /> 上傳成績給老師</>}
+                            {uploadStatus === 'uploading' && <>上傳中...</>}
+                            {uploadStatus === 'success' && <><Check size={32} /> 上傳成功！</>}
+                            {uploadStatus === 'error' && <><X size={32} /> 上傳失敗，請重試</>}
+                        </button>
+
+                        <button 
+                            onClick={onRestart}
+                            className="bg-yellow-400 text-yellow-900 py-4 px-6 rounded-2xl text-2xl font-bold flex items-center justify-center gap-2 btn-interact"
+                        >
+                            <RotateCcw size={32} /> 再挑戰一次
+                        </button>
+                    </div>
+
+                    <div className="w-full bg-pink-50 border-4 border-pink-200 p-6 rounded-2xl mb-8">
+                        <h3 className="text-2xl font-bold text-pink-600 mb-4">🌟 課後小任務</h3>
+                        <p className="text-xl text-gray-700 mb-4">請完成這句話並跟同學分享：</p>
+                        <div className="bg-white p-4 rounded-xl text-xl leading-relaxed font-bold text-gray-600">
+                            「我心中的陽光是
+                            <input className="border-b-2 border-gray-400 w-24 mx-2 text-center text-blue-600 focus:outline-none" placeholder="顏色" />
+                            色的，因為
+                            <input className="border-b-2 border-gray-400 w-full mt-2 text-blue-600 focus:outline-none" placeholder="寫下你的原因..." />。」
+                        </div>
+                    </div>
+
+                    <div className="w-full">
+                        <h3 className="text-2xl font-bold text-gray-700 mb-4">📝 答題檢討</h3>
+                        <div className="space-y-4">
+                            {history.map((h, i) => (
+                                <div key={i} className={`p-4 rounded-xl border-l-8 ${h.correct ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'} shadow-sm`}>
+                                    <div className="flex items-start gap-3">
+                                        <div className="mt-1 text-2xl">{h.correct ? '⭕' : '❌'}</div>
+                                        <div>
+                                            <p className="font-bold text-lg text-gray-800">{h.question}</p>
+                                            <p className="text-gray-600 mt-1">
+                                                你的答案：<span className={h.correct ? 'text-green-600' : 'text-red-600 font-bold'}>{h.userAns}</span>
+                                            </p>
+                                            {!h.correct && (
+                                                <p className="text-green-600 mt-1 font-bold">正確答案：{h.correctAns}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 主程式 ---
+        const App = () => {
+            const [view, setView] = useState('login'); 
+            const [studentName, setStudentName] = useState('');
+            const [quizState, setQuizState] = useState({
+                score: 0,
+                history: [],
+                completed: false,
+                packTitle: ''
+            });
+            const [localHistory, setLocalHistory] = useState([]);
+            const [uploadStatus, setUploadStatus] = useState('idle');
+
+            useEffect(() => {
+                const saved = localStorage.getItem('sunlight_lesson_history');
+                if (saved) {
+                    try {
+                        setLocalHistory(JSON.parse(saved));
+                    } catch(e) {}
+                }
+            }, []);
+
+            const handleLogin = (name) => {
+                if(!name.trim()) return alert("請輸入名字喔！");
+                setStudentName(name);
+                setView('menu');
+            };
+
+            const saveRecord = (finalScore, detailHistory, packTitle) => {
+                const record = {
+                    date: new Date().toLocaleString(),
+                    name: studentName,
+                    score: finalScore,
+                    pack: packTitle,
+                    details: detailHistory
+                };
+                const newHistory = [record, ...localHistory];
+                setLocalHistory(newHistory);
+                localStorage.setItem('sunlight_lesson_history', JSON.stringify(newHistory));
+                return record;
+            };
+
+            const uploadToGoogle = async (record) => {
+                setUploadStatus('uploading');
+                const formData = new FormData();
+                formData.append('name', record.name);
+                formData.append('score', record.score);
+                formData.append('date', record.date);
+                formData.append('pack', record.pack);
+                formData.append('detail', JSON.stringify(record.details.map(d => d.correct ? 'O' : 'X')));
+
+                try {
+                    await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        body: formData,
+                        mode: 'no-cors' 
+                    });
+                    setUploadStatus('success');
+                    setTimeout(() => setUploadStatus('idle'), 3000);
+                } catch (error) {
+                    console.error("Upload failed", error);
+                    setUploadStatus('error');
                 }
             };
-            container.appendChild(btn);
-        });
-    }
 
-    // 4. 理解 & 5. 修辭 (Generic Render)
-    function renderQuiz(containerId, data, title, typeName) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = '';
-        let correct = 0;
-        let done = 0;
+            const questionSets = {
+                challenge: {
+                    title: '課文理解挑戰',
+                    sub: '成語＋修辭（老師最愛出的那種）',
+                    questions: comprehensionChallengeData
+                },
+                warmup: {
+                    title: '快速暖身',
+                    sub: '注音／國字／基礎理解（先熱身再開大）',
+                    questions: warmupQuizData
+                }
+            };
 
-        data.forEach((q, idx) => {
-            const div = document.createElement('div');
-            div.className = "mb-6 bg-gray-50 p-6 rounded-2xl text-left border-2 border-gray-200";
-            let optsHtml = '';
-            
-            if (q.a === true || q.a === false) { // True/False
-                optsHtml = `
-                    <div class="mt-4 flex gap-4">
-                        <button class="btn-custom bg-green-100 text-green-700 w-20 h-20 text-3xl rounded-full hover:bg-green-200 border-2 border-green-300" onclick="checkGen(this, ${q.a}, true, ${idx})">○</button>
-                        <button class="btn-custom bg-red-100 text-red-700 w-20 h-20 text-3xl rounded-full hover:bg-red-200 border-2 border-red-300" onclick="checkGen(this, ${q.a}, false, ${idx})">✕</button>
-                    </div>
-                `;
-            } else { // Multiple Choice
-                optsHtml = `<div class="mt-4 flex flex-wrap gap-3">` + q.opts.map(opt => 
-                    `<button class="btn-custom bg-white border-2 border-gray-300 px-6 py-3 rounded-xl hover:bg-gray-100 text-xl font-bold" onclick="checkGen(this, '${q.a}', '${opt}', ${idx})">${opt}</button>`
-                ).join('') + `</div>`;
-            }
+            return (
+                <div className="min-h-screen w-full max-w-4xl mx-auto bg-white shadow-2xl overflow-hidden relative font-sans">
+                    <header className="bg-yellow-400 p-4 border-b-4 border-yellow-600 flex justify-between items-center z-10 relative">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-white p-2 rounded-full border-2 border-orange-500">
+                                <Sun size={32} color="#F59E0B" className="animate-spin-slow" />
+                            </div>
+                            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-wider">色香味的陽光</h1>
+                        </div>
+                        {studentName && (
+                            <div className="bg-white px-4 py-2 rounded-xl border-2 border-yellow-600 font-bold text-lg text-yellow-800">
+                                👤 {studentName}
+                            </div>
+                        )}
+                    </header>
 
-            div.innerHTML = `<p class="font-bold mb-2 text-2xl text-gray-800 leading-snug">${idx+1}. ${q.q}</p><div id="ans-area-${containerId}-${idx}">${optsHtml}</div>`;
-            container.appendChild(div);
-        });
+                    <main className="p-4 md:p-8 min-h-[80vh] flex flex-col items-center justify-center relative">
+                        {view === 'login' && <LoginScreen onLogin={handleLogin} />}
+                        {view === 'menu' && <MainMenu setView={setView} localHistory={localHistory} studentName={studentName}/>}
+                        {view === 'video' && <VideoSection onBack={() => setView('menu')} />}
+                        {view === 'study' && <StudySection onBack={() => setView('menu')} />}
+                        {view === 'quiz' && (
+                            <QuizSection 
+                                questionSets={questionSets}
+                                onComplete={(score, history, packTitle) => {
+                                    const record = saveRecord(score, history, packTitle);
+                                    setQuizState({ score, history, completed: true, packTitle });
+                                    setView('result');
+                                }} 
+                                onBack={() => setView('menu')}
+                            />
+                        )}
+                        {view === 'result' && (
+                            <ResultScreen 
+                                score={quizState.score} 
+                                total={quizState.history.length}
+                                history={quizState.history}
+                                studentName={studentName}
+                                packTitle={quizState.packTitle}
+                                onUpload={() => uploadToGoogle({
+                                    name: studentName,
+                                    score: quizState.score,
+                                    date: new Date().toLocaleString(),
+                                    pack: quizState.packTitle,
+                                    details: quizState.history
+                                })}
+                                uploadStatus={uploadStatus}
+                                onRestart={() => setView('menu')}
+                            />
+                        )}
+                    </main>
 
-        // Closure to keep scope
-        window[`done_${containerId}`] = 0;
-        window[`correct_${containerId}`] = 0;
-        
-        // Dynamic check function
-        window.checkGen = (btn, correctVal, userVal, idx) => {
-            const area = btn.parentElement.nodeName === 'DIV' ? btn.parentElement : btn.parentElement; // handle structure diff
-            // Disable all buttons in this question
-            let btns;
-            if(area.id.startsWith('ans-area')) {
-                 btns = area.querySelectorAll('button');
-            } else {
-                 btns = area.parentElement.querySelectorAll('button');
-            }
-            
-            btns.forEach(b => b.disabled = true);
-
-            if (userVal === correctVal) {
-                btn.className = "bg-green-500 text-white px-6 py-3 rounded-xl font-bold shadow-md text-xl";
-                btn.innerHTML += ' ✔️';
-                showFeedback("答對了！", "success");
-                window[`correct_${containerId}`]++;
-            } else {
-                btn.className = "bg-red-500 text-white px-6 py-3 rounded-xl font-bold shadow-md text-xl";
-                showFeedback("可惜答錯了", "hint");
-            }
-            window[`done_${containerId}`]++;
-            
-            if (window[`done_${containerId}`] === data.length) {
-                saveRecord(typeName, window[`correct_${containerId}`], data.length - window[`correct_${containerId}`]);
-            }
-        };
-    }
-
-    function initComp() { renderQuiz('comp-container', compData, '課文理解', '課文理解'); }
-    function initRhetoric() { renderQuiz('rhetoric-container', rhetoricData, '修辭', '修辭互動'); }
-
-    // 6. 遊戲
-    function initGame() {
-        const stage = document.getElementById('game-stage');
-        let level = 0;
-        let score = 0;
-
-        function renderLevel() {
-            if (level >= gameData.length) {
-                stage.innerHTML = `
-                    <div class="text-8xl mb-6">🏆</div>
-                    <h3 class="text-4xl font-bold text-indigo-700 mb-4">任務完成！</h3>
-                    <p class="text-2xl text-gray-500">你已經成為聲音魔法師了！</p>
-                    <div class="mt-8 font-bold text-3xl text-yellow-600 bg-yellow-50 px-8 py-4 rounded-2xl">最終得分: ${score}</div>
-                `;
-                saveRecord('闖關遊戲', score/10, gameData.length - (score/10));
-                return;
-            }
-
-            const q = gameData[level];
-            document.getElementById('game-level').innerText = level + 1;
-            
-            stage.innerHTML = `
-                <div class="bg-indigo-50 p-8 rounded-[2rem] w-full max-w-2xl pop-in border-4 border-white shadow-lg">
-                    <p class="text-2xl font-bold mb-8 text-indigo-900 leading-relaxed">${q.q}</p>
-                    <div class="grid gap-4">
-                        ${q.opts.map(opt => `
-                            <button onclick="checkGameAns('${opt}', '${q.a}')" class="btn-custom w-full bg-white border-2 border-indigo-100 py-4 rounded-xl font-bold text-indigo-600 text-2xl hover:bg-indigo-500 hover:text-white transition">
-                                ${opt}
-                            </button>
-                        `).join('')}
-                    </div>
+                    <div className="absolute bottom-0 left-0 w-full h-4 bg-gradient-to-r from-green-400 via-yellow-400 to-blue-400"></div>
                 </div>
-            `;
-        }
-
-        window.checkGameAns = (ans, correct) => {
-            if (ans === correct) {
-                score += 10;
-                document.getElementById('game-score').innerText = score;
-                showFeedback("答對了！晉級下一關！", "success");
-                level++;
-                setTimeout(renderLevel, 1000);
-            } else {
-                showFeedback(gameData[level].hint, "hint");
-            }
-        };
-        renderLevel();
-    }
-
-    // --- 延伸任務 ---
-    function submitExtension() {
-        const val = document.getElementById('extend-answer').value;
-        if(val) {
-            saveRecord('延伸任務', 1, 0); // 只要提交就算完成
-            alert("想法已提交！謝謝你的分享 ❤️");
-            document.getElementById('extend-answer').value = '';
-        }
-    }
-
-    // --- 資料儲存與記錄 ---
-    
-    function saveRecord(moduleName, correct, wrong) {
-        const record = {
-            time: new Date().toLocaleString(),
-            name: currentUser,
-            module: moduleName,
-            correct: correct,
-            wrong: wrong,
-            score: Math.round((correct / (correct + wrong)) * 100) || 100
+            );
         };
 
-        // 1. 存入 LocalStorage (學生端記錄)
-        let history = JSON.parse(localStorage.getItem('musicFlyHistory') || '[]');
-        history.unshift(record);
-        localStorage.setItem('musicFlyHistory', JSON.stringify(history));
-
-        // 2. 傳送至 Google Sheet
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors', // 重要：避免 CORS 錯誤
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(record)
-        }).then(() => {
-            console.log("Sent to Google Sheet");
-        }).catch(err => console.error(err));
-    }
-
-    function showHistory() {
-        if (!currentUser) return alert("請先登入喔！");
-        
-        const history = JSON.parse(localStorage.getItem('musicFlyHistory') || '[]');
-        const list = document.getElementById('historyList');
-        const modal = document.getElementById('historyModal');
-        
-        list.innerHTML = '';
-        if (history.length === 0) {
-            list.innerHTML = '<p class="text-center text-gray-500 text-xl py-8">目前還沒有記錄，快去挑戰吧！</p>';
-        } else {
-            // 過濾當前使用者的記錄
-            const myHistory = history.filter(r => r.name === currentUser);
-            myHistory.forEach(r => {
-                const div = document.createElement('div');
-                div.className = "bg-gray-50 p-4 rounded-xl border-l-8 border-indigo-400 flex justify-between items-center";
-                div.innerHTML = `
-                    <div>
-                        <div class="font-bold text-gray-800 text-xl">${r.module}</div>
-                        <div class="text-base text-gray-500">${r.time}</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-2xl font-bold ${r.score >= 80 ? 'text-green-600' : 'text-orange-500'}">${r.score}分</div>
-                        <div class="text-sm text-gray-500">對${r.correct} / 錯${r.wrong}</div>
-                    </div>
-                `;
-                list.appendChild(div);
-            });
-        }
-        modal.classList.remove('hidden');
-    }
-</script>
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
