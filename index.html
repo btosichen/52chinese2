@@ -130,7 +130,7 @@
         </button>
         <button onclick="switchTab('vocab')" class="card menu-btn p-8 flex flex-col items-center justify-center hover:bg-blue-50 cursor-pointer text-center">
             <div class="text-6xl mb-4">📝</div>
-            <div class="text-2xl font-bold text-gray-700">國字注音</div>
+            <div class="text-2xl font-bold text-gray-700">字詞與成語</div>
         </button>
         <button onclick="switchTab('typo')" class="card menu-btn p-8 flex flex-col items-center justify-center hover:bg-red-50 cursor-pointer text-center">
             <div class="text-6xl mb-4">✏️</div>
@@ -138,15 +138,15 @@
         </button>
         <button onclick="switchTab('synonym')" class="card menu-btn p-8 flex flex-col items-center justify-center hover:bg-purple-50 cursor-pointer text-center">
             <div class="text-6xl mb-4">🔄</div>
-            <div class="text-2xl font-bold text-gray-700">詞語配對</div>
+            <div class="text-2xl font-bold text-gray-700">詞語對對碰</div>
         </button>
         <button onclick="switchTab('comprehension')" class="card menu-btn p-8 flex flex-col items-center justify-center hover:bg-green-50 cursor-pointer text-center">
             <div class="text-6xl mb-4">⭕❌</div>
-            <div class="text-2xl font-bold text-gray-700">課文理解</div>
+            <div class="text-2xl font-bold text-gray-700">理解大考驗</div>
         </button>
         <button onclick="switchTab('rhetoric')" class="card menu-btn p-8 flex flex-col items-center justify-center hover:bg-pink-50 cursor-pointer text-center">
             <div class="text-6xl mb-4">🎭</div>
-            <div class="text-2xl font-bold text-gray-700">修辭互動</div>
+            <div class="text-2xl font-bold text-gray-700">修辭魔法師</div>
         </button>
     </div>
 
@@ -195,10 +195,10 @@
             </div>
         </div>
 
-        <!-- 2. 國字注音 -->
+        <!-- 2. 國字與成語 -->
         <div id="view-vocab" class="view-section hidden">
             <div class="card p-10 bg-white text-center">
-                <h2 class="text-3xl font-bold mb-8 text-blue-600">📝 國字注音挑戰</h2>
+                <h2 class="text-3xl font-bold mb-8 text-blue-600">📝 字詞與成語挑戰</h2>
                 <div id="vocab-container"></div>
             </div>
         </div>
@@ -216,7 +216,7 @@
         <div id="view-synonym" class="view-section hidden">
             <div class="card p-10 bg-white text-center">
                 <h2 class="text-3xl font-bold mb-6 text-purple-600">🔄 詞語對對碰</h2>
-                <p class="mb-8 text-xl text-gray-500">點擊一個詞，再點擊它的同義或反義詞！</p>
+                <p class="mb-8 text-xl text-gray-500">點擊一個詞，再點擊它的同義、反義詞或修辭夥伴！</p>
                 <div id="match-game" class="grid grid-cols-2 gap-6"></div>
             </div>
         </div>
@@ -284,36 +284,69 @@
     let currentUser = '';
     let currentScore = 0;
     
-    // 題目資料庫
+    // 1. 字詞與成語資料庫 (整合原Vocab與成語)
     const vocabData = [
+        // 原有題目
         { q: "他曾多次獲得鋼琴大賽(  )軍。", opts: ["冠", "貫"], a: "冠" },
         { q: "悠揚的琴聲(  )緩流動著。", opts: ["徐", "除"], a: "徐" },
         { q: "徐緩的注音是？", opts: ["ㄒㄩˊ", "ㄒㄩˋ"], a: "ㄒㄩˊ" },
-        { q: "色彩(  )紛。", opts: ["繽", "濱"], a: "繽" }
+        { q: "色彩(  )紛。", opts: ["繽", "濱"], a: "繽" },
+        // 新增成語選擇
+        { q: "林老師在國際舞臺上表現亮眼，在舞蹈界占有＿＿＿＿。", opts: ["一席之地", "千軍萬馬", "問道於盲"], a: "一席之地" },
+        { q: "爸爸抱起我和妹妹，對他來說＿＿＿＿。", opts: ["易如反掌", "不疾不徐", "相映成趣"], a: "易如反掌" },
+        { q: "小徑兩旁紅花綠葉，彼此襯托，看起來＿＿＿＿。", opts: ["相映成趣", "勇冠三軍", "窮途末路"], a: "相映成趣" },
+        { q: "爸爸和林叔叔認識二十多年，早就是＿＿＿＿。", opts: ["莫逆之交", "問道於盲", "轟轟烈烈"], a: "莫逆之交" },
+        // 新增成語是非 (轉為問答)
+        { q: "「不疾不徐」是形容事情進行得太快嗎？", opts: ["對", "錯"], a: "錯" },
+        { q: "「問道於盲」是形容向不懂的人請教嗎？", opts: ["對", "錯"], a: "對" },
+        { q: "「五彩繽紛」常用來形容顏色很多、很漂亮嗎？", opts: ["對", "錯"], a: "對" },
+        { q: "「前車之鑑」是提醒自己不要重蹈別人的錯誤嗎？", opts: ["對", "錯"], a: "對" }
     ];
 
+    // 2. 改錯字資料庫
     const typoData = [
         { sent: "上天為我們觀上一道門，必會替我們打開另一扇窗。", wrongIndex: 5, wrongChar: "觀", correct: "關" },
         { sent: "媽媽正在廚房洗刷鍋宛瓢盆。", wrongIndex: 9, wrongChar: "宛", correct: "碗" },
-        { sent: "他的勤聲深深迷住了大家。", wrongIndex: 2, wrongChar: "勤", correct: "琴" }
+        { sent: "他的勤聲深深迷住了大家。", wrongIndex: 2, wrongChar: "勤", correct: "琴" },
+        // 新增成語改錯
+        { sent: "他說話總是不疾不余，十分優雅。", wrongIndex: 6, wrongChar: "余", correct: "徐" },
+        { sent: "諸葛亮羽扁綸巾的形象深入人心。", wrongIndex: 4, wrongChar: "扁", correct: "扇" },
+        { sent: "這支隊伍勇貫三軍，無人能敵。", wrongIndex: 4, wrongChar: "貫", correct: "冠" },
+        { sent: "這道數學題刁讚古怪，很難算。", wrongIndex: 6, wrongChar: "讚", correct: "鑽" }
     ];
 
+    // 3. 配對資料庫 (整合修辭配對)
     const matchData = [
+        // 原有配對
         { id: 1, text: "悠揚", type: "syn", pair: 2 }, { id: 2, text: "悅耳", type: "syn", pair: 1 },
         { id: 3, text: "迷住", type: "syn", pair: 4 }, { id: 4, text: "吸引", type: "syn", pair: 3 },
         { id: 5, text: "黑暗", type: "ant", pair: 6 }, { id: 6, text: "明亮", type: "ant", pair: 5 },
-        { id: 7, text: "徐緩", type: "ant", pair: 8 }, { id: 8, text: "急促", type: "ant", pair: 7 }
+        { id: 7, text: "徐緩", type: "ant", pair: 8 }, { id: 8, text: "急促", type: "ant", pair: 7 },
+        // 新增修辭配對
+        { id: 9, text: "行雲流水", type: "rhet", pair: 10 }, { id: 10, text: "譬喻", type: "rhet", pair: 9 },
+        { id: 11, text: "世界依然黑暗", type: "rhet", pair: 12 }, { id: 12, text: "映襯", type: "rhet", pair: 11 }
     ];
 
+    // 4. 理解資料庫
     const compData = [
         { q: "黃裕翔只能用鋼琴創作音樂。", a: false },
         { q: "生活中的聲音也能成為音樂素材。", a: true },
-        { q: "黃裕翔雖然看不見，但他用耳朵感受世界。", a: true }
+        { q: "黃裕翔雖然看不見，但他用耳朵感受世界。", a: true },
+        // 新增綜合題
+        { q: "下列哪一句最符合〈在黑暗中乘著音樂飛翔〉的寫作特色？", opts: ["用感覺描寫音樂，彷彿聽見聲音", "詳細說明樂理知識", "直接列出演奏技巧"], a: "用感覺描寫音樂，彷彿聽見聲音" }
     ];
 
+    // 5. 修辭資料庫
     const rhetoricData = [
         { q: "「掌聲才如雷般的響起」運用了什麼修辭？", opts: ["譬喻", "擬人", "排比"], a: "譬喻" },
-        { q: "引用名言「上天為我們關上一道門...」是為了？", opts: ["增加字數", "支持觀點", "練習寫字"], a: "支持觀點" }
+        { q: "引用名言「上天為我們關上一道門...」是為了？", opts: ["增加字數", "支持觀點", "練習寫字"], a: "支持觀點" },
+        // 新增修辭題
+        { q: "「十根手指在黑白琴鍵上輕輕舞動。」主要使用哪一種修辭？", opts: ["疊字", "排比", "引用"], a: "疊字" }, // 依據題意選項調整，若強調「輕輕」則為疊字
+        { q: "「樂聲摸著黑四處流轉。」使用的修辭是？", opts: ["譬喻", "擬人", "誇飾"], a: "擬人" },
+        // 新增修辭是非
+        { q: "「輕輕舞動、深深迷住」使用了疊字修辭。", a: true },
+        { q: "「音樂引領他推開窗，飛向另一個世界。」把音樂當成人來寫(擬人)。", a: true },
+        { q: "「轟隆隆的火車聲、嘩啦啦的雨滴聲、歡笑聲」屬於排比。", a: true }
     ];
 
     const gameData = [
@@ -388,7 +421,7 @@
 
     // --- 各單元實作 ---
 
-    // 1. 國字注音
+    // 1. 字詞與成語 (Vocab & Idioms)
     function initVocab() {
         const container = document.getElementById('vocab-container');
         let currentIdx = 0;
@@ -398,24 +431,31 @@
             if (currentIdx >= vocabData.length) {
                 container.innerHTML = `<div class="text-3xl font-bold text-indigo-600 mb-6">🎉 完成挑戰！<br>答對 ${correctCount}/${vocabData.length} 題</div>
                 <button onclick="initVocab()" class="mt-4 bg-gray-200 px-8 py-3 rounded-xl text-xl font-bold hover:bg-gray-300">再玩一次</button>`;
-                saveRecord('國字注音', correctCount, vocabData.length - correctCount);
+                saveRecord('字詞與成語', correctCount, vocabData.length - correctCount);
                 return;
             }
             const q = vocabData[currentIdx];
+            
+            // 動態調整字體大小，如果選項字數多(如成語)，字體變小
+            const isLongText = q.opts.some(opt => opt.length > 2);
+            const btnClass = isLongText 
+                ? "btn-custom bg-white border-4 border-blue-200 text-2xl w-48 h-32 rounded-3xl hover:bg-blue-50 font-bold text-blue-700 mx-2"
+                : "btn-custom bg-white border-4 border-blue-200 text-5xl w-32 h-32 rounded-3xl hover:bg-blue-50 font-bold text-blue-700";
+
             container.innerHTML = `
                 <div class="text-3xl mb-10 font-bold bg-blue-50 p-8 rounded-2xl inline-block border-4 border-blue-100 leading-relaxed">${q.q}</div>
-                <div class="flex justify-center gap-8">
-                    ${q.opts.map(opt => `<button onclick="checkVocab('${opt}', '${q.a}')" class="btn-custom bg-white border-4 border-blue-200 text-5xl w-32 h-32 rounded-3xl hover:bg-blue-50 font-bold text-blue-700">${opt}</button>`).join('')}
+                <div class="flex flex-wrap justify-center gap-6">
+                    ${q.opts.map(opt => `<button onclick="checkVocab('${opt}', '${q.a}')" class="${btnClass}">${opt}</button>`).join('')}
                 </div>
             `;
         }
 
         window.checkVocab = (ans, correct) => {
             if (ans === correct) {
-                showFeedback("你抓到聲音的秘密了！", "success");
+                showFeedback("答對了！", "success");
                 correctCount++;
             } else {
-                showFeedback("再聽一次，答案就在聲音裡！", "hint");
+                showFeedback("再想一想喔！", "hint");
             }
             currentIdx++;
             setTimeout(render, 800);
@@ -481,7 +521,10 @@
 
         shuffled.forEach(item => {
             const btn = document.createElement('button');
-            btn.className = "btn-custom bg-white border-2 border-purple-200 text-gray-700 p-6 rounded-2xl font-bold text-2xl hover:bg-purple-50 min-h-[100px]";
+            // 動態字體：如果字數多(如成語、修辭句)，字體稍微縮小
+            const fontSize = item.text.length > 4 ? "text-xl" : "text-2xl";
+            
+            btn.className = `btn-custom bg-white border-2 border-purple-200 text-gray-700 p-4 rounded-2xl font-bold ${fontSize} hover:bg-purple-50 min-h-[100px] flex items-center justify-center`;
             btn.innerText = item.text;
             btn.dataset.id = item.id;
             btn.dataset.pair = item.pair;
