@@ -1,0 +1,830 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L2 在黑暗中乘著音樂飛翔 - 互動學習網 (大字版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #E0F7FA 0%, #FCE4EC 50%, #FFF9C4 100%);
+            background-attachment: fixed;
+            /* 基礎字體加大 */
+            font-size: 1.25rem; 
+        }
+        
+        /* 超強記憶法配色系統 */
+        .mem-yellow { background-color: #FFF59D; color: #827717; padding: 4px 8px; border-radius: 6px; border-bottom: 3px solid #FBC02D; }
+        .mem-blue { color: #0277BD; font-weight: bold; border-bottom: 3px dashed #4FC3F7; }
+        .mem-green { color: #2E7D32; background-color: #E8F5E9; padding: 4px 8px; border-radius: 6px; }
+        .mem-red { color: #C62828; font-weight: bold; text-decoration: underline; text-decoration-style: wavy; }
+
+
+        .card {
+            background: rgba(255, 255, 255, 0.95); /* 稍微增加不透明度以提升對比 */
+            backdrop-filter: blur(10px);
+            border-radius: 24px; /* 圓角加大 */
+            box-shadow: 0 10px 40px 0 rgba(31, 38, 135, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: transform 0.3s ease;
+        }
+        .card:hover { transform: translateY(-5px); }
+
+
+        .btn-custom {
+            transition: all 0.2s;
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15); /* 陰影加深 */
+        }
+        .btn-custom:active { transform: scale(0.95); }
+
+
+        /* 動畫效果 */
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .pop-in { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        
+        .correct-anim { animation: bounce 0.5s; background-color: #A5D6A7 !important; border-color: #2E7D32 !important; }
+        .wrong-anim { animation: shake 0.5s; background-color: #EF9A9A !important; border-color: #C62828 !important; }
+
+
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+
+
+        /* 改錯字專用 - 加大點擊區 */
+        .typo-char { 
+            cursor: pointer; 
+            padding: 4px 6px; 
+            margin: 0 2px;
+            border-bottom: 3px solid transparent; 
+            transition: all 0.2s; 
+            font-size: 1.75rem; /* 字體特大 */
+            line-height: 2.5rem;
+        }
+        .typo-char:hover { background-color: #FFEBEE; border-bottom: 3px solid #EF5350; }
+        
+        /* 配對連連看 */
+        .match-selected { background-color: #B3E5FC !important; transform: scale(1.05); border: 4px solid #0288D1 !important; }
+        .match-solved { opacity: 0; pointer-events: none; transition: opacity 0.5s; }
+        
+        /* 選單按鈕專用 */
+        .menu-btn { min-height: 180px; }
+    </style>
+</head>
+<body class="text-gray-800 pb-32 leading-relaxed">
+
+
+<!-- 登入模態框 -->
+<div id="loginModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+    <div class="bg-white p-10 rounded-[2rem] shadow-2xl max-w-lg w-full text-center pop-in relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-6 bg-gradient-to-r from-blue-400 via-pink-400 to-yellow-400"></div>
+        <div class="text-7xl mb-6">🎹</div>
+        <h2 class="text-4xl font-bold mb-4 text-indigo-600">歡迎來到<br>音樂的翅膀</h2>
+        <p class="text-xl text-gray-500 mb-8">請輸入你的名字，小書精會幫你記錄學習歷程喔！</p>
+        <input type="text" id="studentName" placeholder="例如：五年一班 王小明" class="w-full p-6 border-4 border-indigo-100 rounded-2xl mb-6 text-center focus:outline-none focus:border-indigo-400 transition text-2xl">
+        <button onclick="startApp()" class="w-full bg-indigo-500 text-white font-bold py-5 rounded-2xl hover:bg-indigo-600 transition shadow-lg text-2xl">開始冒險 🚀</button>
+    </div>
+</div>
+
+
+<!-- 導航列 -->
+<nav class="sticky top-0 z-40 bg-white bg-opacity-95 backdrop-blur shadow-md px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-3">
+        <div class="bg-indigo-100 p-3 rounded-full text-indigo-600 text-2xl"><i class="fas fa-music"></i></div>
+        <span class="font-bold text-indigo-800 text-xl hidden sm:block">在黑暗中乘著音樂飛翔</span>
+    </div>
+    <div class="flex gap-3 items-center">
+        <button onclick="showHistory()" class="bg-yellow-100 text-yellow-800 px-5 py-2 rounded-full text-lg font-bold border-2 border-yellow-300 hover:bg-yellow-200 transition">
+            <i class="fas fa-trophy mr-1"></i> 我的記錄
+        </button>
+        <span id="displayUser" class="bg-gray-100 px-5 py-2 rounded-full text-lg font-bold text-gray-600 border-2 border-gray-200">未登入</span>
+    </div>
+</nav>
+
+
+<!-- 主內容區 -->
+<main class="container mx-auto px-4 mt-8 max-w-5xl" id="mainApp" style="display:none;">
+
+
+    <!-- 影音專區 -->
+    <section class="mb-10">
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="card p-6">
+                <h3 class="font-bold text-2xl mb-4 text-indigo-600 flex items-center"><i class="fas fa-video mr-3"></i>課文引導</h3>
+                <video controls class="w-full rounded-xl shadow-lg bg-black">
+                    <source src="https://nanivideo-download.oneclass.com.tw/media/ade61c76931ba7f9/video/引導動畫/L02引導動畫_在黑暗中乘著音樂飛翔.mp4" type="video/mp4">
+                    您的瀏覽器不支援影片標籤。
+                </video>
+            </div>
+            <div class="card p-6">
+                <h3 class="font-bold text-2xl mb-4 text-pink-600 flex items-center"><i class="fas fa-headphones mr-3"></i>課文朗讀</h3>
+                <video controls class="w-full rounded-xl shadow-lg bg-black">
+                    <source src="https://nanivideo-download.oneclass.com.tw/media/ade61c76931ba7f9/video/隨文朗讀動畫/L02隨文朗讀動畫_在黑暗中乘著音樂飛翔.mp4" type="video/mp4">
+                    您的瀏覽器不支援影片標籤。
+                </video>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- 功能選單 (Dashboard) -->
+    <div class="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+        <button onclick="switchTab('keypoints')" class="card menu-btn p-8 flex flex-col items-center justify-center hover:bg-yellow-50 cursor-pointer text-center">
+            <div class="text-6xl mb-4">🌈</div>
+            <div class="text-2xl font-bold text-gray-700">重點視覺化</div>
+        </button>
+        <button onclick="switchTab('vocab')" class="card menu-btn p-8 flex flex-col items-center justify-center hover:bg-blue-50 cursor-pointer text-center">
+            <div class="text-6xl mb-4">📝</div>
+            <div class="text-2xl font-bold text-gray-700">字詞與成語</div>
+        </button>
+        <button onclick="switchTab('typo')" class="card menu-btn p-8 flex flex-col items-center justify-center hover:bg-red-50 cursor-pointer text-center">
+            <div class="text-6xl mb-4">✏️</div>
+            <div class="text-2xl font-bold text-gray-700">錯字偵探</div>
+        </button>
+        <button onclick="switchTab('synonym')" class="card menu-btn p-8 flex flex-col items-center justify-center hover:bg-purple-50 cursor-pointer text-center">
+            <div class="text-6xl mb-4">🔄</div>
+            <div class="text-2xl font-bold text-gray-700">詞語對對碰</div>
+        </button>
+        <button onclick="switchTab('comprehension')" class="card menu-btn p-8 flex flex-col items-center justify-center hover:bg-green-50 cursor-pointer text-center">
+            <div class="text-6xl mb-4">⭕❌</div>
+            <div class="text-2xl font-bold text-gray-700">理解大考驗</div>
+        </button>
+        <button onclick="switchTab('rhetoric')" class="card menu-btn p-8 flex flex-col items-center justify-center hover:bg-pink-50 cursor-pointer text-center">
+            <div class="text-6xl mb-4">🎭</div>
+            <div class="text-2xl font-bold text-gray-700">修辭魔法師</div>
+        </button>
+    </div>
+
+
+    <!-- 闖關遊戲按鈕 (特別顯眼) -->
+    <button onclick="switchTab('game')" class="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-3xl p-6 shadow-xl mb-10 transform hover:scale-[1.01] transition flex items-center justify-center text-3xl font-bold border-4 border-white ring-4 ring-blue-200">
+        <span class="mr-4 text-5xl">🎮</span> 闖關挑戰：聲音飛翔任務
+    </button>
+
+
+    <!-- 內容展示區 -->
+    <div id="contentArea" class="relative min-h-[500px]">
+        
+        <!-- 1. 重點視覺化 -->
+        <div id="view-keypoints" class="view-section hidden">
+            <div class="card p-8 bg-white">
+                <h2 class="text-3xl font-bold mb-8 text-center text-indigo-600 bg-indigo-50 py-3 rounded-xl border border-indigo-100">🌈 課文重點超強記憶</h2>
+                <div class="space-y-6">
+                    <div class="flex items-start gap-6 p-4 rounded-2xl hover:bg-gray-50 transition border border-transparent hover:border-gray-200">
+                        <div class="text-5xl">🎹</div>
+                        <div>
+                            <h4 class="font-bold text-2xl mb-2"><span class="mem-yellow">音樂無所不在</span></h4>
+                            <p class="text-gray-600 text-xl">不只是鋼琴，生活中的鍋碗瓢盆聲音也能變成音樂。</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-6 p-4 rounded-2xl hover:bg-gray-50 transition border border-transparent hover:border-gray-200">
+                        <div class="text-5xl">👂</div>
+                        <div>
+                            <h4 class="font-bold text-2xl mb-2"><span class="mem-green">用耳朵看世界</span></h4>
+                            <p class="text-gray-600 text-xl">黃裕翔雖然看不見，但他用<span class="mem-blue">聆聽</span>代替眼睛感受生活的美好。</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-6 p-4 rounded-2xl hover:bg-gray-50 transition border border-transparent hover:border-gray-200">
+                        <div class="text-5xl">🚪</div>
+                        <div>
+                            <h4 class="font-bold text-2xl mb-2"><span class="mem-red">上天關門必開窗</span></h4>
+                            <p class="text-gray-600 text-xl">這是一個<span class="mem-red">引用</span>修辭。意思是失去某樣東西，必定會在別的地方獲得補償。</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-6 p-4 rounded-2xl hover:bg-gray-50 transition border border-transparent hover:border-gray-200">
+                        <div class="text-5xl">🎵</div>
+                        <div>
+                            <h4 class="font-bold text-2xl mb-2"><span class="mem-yellow">聲音的感動</span></h4>
+                            <p class="text-gray-600 text-xl">聲音不只是聽見的「音」，更是心裡的感受與無限的想像。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- 2. 國字與成語 -->
+        <div id="view-vocab" class="view-section hidden">
+            <div class="card p-10 bg-white text-center">
+                <h2 class="text-3xl font-bold mb-8 text-blue-600">📝 字詞與成語挑戰</h2>
+                <div id="vocab-container"></div>
+            </div>
+        </div>
+
+
+        <!-- 3. 改錯字 -->
+        <div id="view-typo" class="view-section hidden">
+            <div class="card p-10 bg-white text-center">
+                <h2 class="text-3xl font-bold mb-6 text-red-600">✏️ 錯字小偵探</h2>
+                <p class="mb-8 text-xl text-gray-500">點擊句子中錯誤的字把它改正！</p>
+                <div id="typo-container" class="space-y-8"></div>
+            </div>
+        </div>
+
+
+        <!-- 4. 詞語配對 -->
+        <div id="view-synonym" class="view-section hidden">
+            <div class="card p-10 bg-white text-center">
+                <h2 class="text-3xl font-bold mb-6 text-purple-600">🔄 詞語對對碰</h2>
+                <p class="mb-8 text-xl text-gray-500">點擊一個詞，再點擊它的同義、反義詞或修辭夥伴！</p>
+                <div id="match-game" class="grid grid-cols-2 gap-6"></div>
+            </div>
+        </div>
+
+
+        <!-- 5. 課文理解 -->
+        <div id="view-comprehension" class="view-section hidden">
+            <div class="card p-10 bg-white text-center">
+                <h2 class="text-3xl font-bold mb-8 text-green-600">⭕❌ 理解大考驗</h2>
+                <div id="comp-container"></div>
+            </div>
+        </div>
+
+
+        <!-- 6. 修辭 -->
+        <div id="view-rhetoric" class="view-section hidden">
+            <div class="card p-10 bg-white text-center">
+                <h2 class="text-3xl font-bold mb-8 text-pink-600">🎭 修辭魔法師</h2>
+                <div id="rhetoric-container"></div>
+            </div>
+        </div>
+
+
+        <!-- 7. 闖關遊戲 -->
+        <div id="view-game" class="view-section hidden">
+            <div class="card p-10 bg-white text-center">
+                <h2 class="text-3xl font-bold mb-4 text-indigo-600">🎮 聲音飛翔任務</h2>
+                <div class="flex justify-between items-center mb-8 px-4">
+                    <span class="text-xl font-bold bg-indigo-100 text-indigo-600 px-5 py-2 rounded-full border-2 border-indigo-200">關卡 <span id="game-level">1</span>/3</span>
+                    <span class="text-xl font-bold bg-yellow-100 text-yellow-700 px-5 py-2 rounded-full border-2 border-yellow-300">得分: <span id="game-score">0</span></span>
+                </div>
+                <div id="game-stage" class="min-h-[300px] flex items-center justify-center flex-col"></div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+    <!-- 延伸任務 -->
+    <div class="mt-10 card p-8 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-100">
+        <h3 class="font-bold text-2xl mb-4 text-indigo-800"><i class="fas fa-star text-yellow-400 mr-2 text-2xl"></i>加分延伸任務</h3>
+        <p class="mb-4 text-xl text-gray-700">如果我閉上眼睛，我會用聲音記住＿＿＿＿。</p>
+        <textarea id="extend-answer" class="w-full p-5 rounded-2xl border-2 border-blue-200 focus:outline-none focus:border-blue-400 text-xl shadow-inner" rows="3" placeholder="寫下你的想法..."></textarea>
+        <button onclick="submitExtension()" class="mt-4 bg-indigo-500 text-white px-8 py-3 rounded-xl text-xl font-bold hover:bg-indigo-600 transition shadow-lg w-full sm:w-auto">提交想法</button>
+    </div>
+
+
+</main>
+
+
+<!-- 歷史記錄模態框 -->
+<div id="historyModal" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50 p-4">
+    <div class="bg-white p-8 rounded-[2rem] shadow-2xl max-w-xl w-full max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-gray-800">📊 你的學習足跡</h3>
+            <button onclick="document.getElementById('historyModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-3xl px-2"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="historyList" class="space-y-4"></div>
+    </div>
+</div>
+
+
+<!-- 回饋提示 -->
+<div id="feedbackToast" class="fixed bottom-16 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-8 py-4 rounded-full shadow-2xl z-50 transition-all duration-300 opacity-0 translate-y-10 pointer-events-none text-xl font-bold border-2 border-white">
+    <span id="feedbackIcon" class="mr-3"></span>
+    <span id="feedbackText"></span>
+</div>
+
+
+<script>
+    // --- 資料與設定 ---
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_F94zepYjcV61hjVBmFWQZ6Ykh5Y2uMUbyuAdUOZtpL2fMTa4_GOCpu_iDCddhX35/exec';
+    let currentUser = '';
+    let currentScore = 0;
+    
+    // 1. 字詞與成語資料庫 (整合原Vocab與成語)
+    const vocabData = [
+        // 原有題目
+        { q: "他曾多次獲得鋼琴大賽(  )軍。", opts: ["冠", "貫"], a: "冠" },
+        { q: "悠揚的琴聲(  )緩流動著。", opts: ["徐", "除"], a: "徐" },
+        { q: "徐緩的注音是？", opts: ["ㄒㄩˊ", "ㄒㄩˋ"], a: "ㄒㄩˊ" },
+        { q: "色彩(  )紛。", opts: ["繽", "濱"], a: "繽" },
+        // 新增成語選擇
+        { q: "林老師在國際舞臺上表現亮眼，在舞蹈界占有＿＿＿＿。", opts: ["一席之地", "千軍萬馬", "問道於盲"], a: "一席之地" },
+        { q: "爸爸抱起我和妹妹，對他來說＿＿＿＿。", opts: ["易如反掌", "不疾不徐", "相映成趣"], a: "易如反掌" },
+        { q: "小徑兩旁紅花綠葉，彼此襯托，看起來＿＿＿＿。", opts: ["相映成趣", "勇冠三軍", "窮途末路"], a: "相映成趣" },
+        { q: "爸爸和林叔叔認識二十多年，早就是＿＿＿＿。", opts: ["莫逆之交", "問道於盲", "轟轟烈烈"], a: "莫逆之交" },
+        // 新增成語是非 (轉為問答)
+        { q: "「不疾不徐」是形容事情進行得太快嗎？", opts: ["對", "錯"], a: "錯" },
+        { q: "「問道於盲」是形容向不懂的人請教嗎？", opts: ["對", "錯"], a: "對" },
+        { q: "「五彩繽紛」常用來形容顏色很多、很漂亮嗎？", opts: ["對", "錯"], a: "對" },
+        { q: "「前車之鑑」是提醒自己不要重蹈別人的錯誤嗎？", opts: ["對", "錯"], a: "對" }
+    ];
+
+
+    // 2. 改錯字資料庫
+    const typoData = [
+        { sent: "上天為我們觀上一道門，必會替我們打開另一扇窗。", wrongIndex: 5, wrongChar: "觀", correct: "關" },
+        { sent: "媽媽正在廚房洗刷鍋宛瓢盆。", wrongIndex: 9, wrongChar: "宛", correct: "碗" },
+        { sent: "他的勤聲深深迷住了大家。", wrongIndex: 2, wrongChar: "勤", correct: "琴" },
+        // 新增成語改錯
+        { sent: "他說話總是不疾不余，十分優雅。", wrongIndex: 6, wrongChar: "余", correct: "徐" },
+        { sent: "諸葛亮羽扁綸巾的形象深入人心。", wrongIndex: 4, wrongChar: "扁", correct: "扇" },
+        { sent: "這支隊伍勇貫三軍，無人能敵。", wrongIndex: 4, wrongChar: "貫", correct: "冠" },
+        { sent: "這道數學題刁讚古怪，很難算。", wrongIndex: 6, wrongChar: "讚", correct: "鑽" }
+    ];
+
+
+    // 3. 配對資料庫 (整合修辭配對)
+    const matchData = [
+        // 原有配對
+        { id: 1, text: "悠揚", type: "syn", pair: 2 }, { id: 2, text: "悅耳", type: "syn", pair: 1 },
+        { id: 3, text: "迷住", type: "syn", pair: 4 }, { id: 4, text: "吸引", type: "syn", pair: 3 },
+        { id: 5, text: "黑暗", type: "ant", pair: 6 }, { id: 6, text: "明亮", type: "ant", pair: 5 },
+        { id: 7, text: "徐緩", type: "ant", pair: 8 }, { id: 8, text: "急促", type: "ant", pair: 7 },
+        // 新增修辭配對
+        { id: 9, text: "行雲流水", type: "rhet", pair: 10 }, { id: 10, text: "譬喻", type: "rhet", pair: 9 },
+        { id: 11, text: "世界依然黑暗", type: "rhet", pair: 12 }, { id: 12, text: "映襯", type: "rhet", pair: 11 }
+    ];
+
+
+    // 4. 理解資料庫
+    const compData = [
+        { q: "黃裕翔只能用鋼琴創作音樂。", a: false },
+        { q: "生活中的聲音也能成為音樂素材。", a: true },
+        { q: "黃裕翔雖然看不見，但他用耳朵感受世界。", a: true },
+        // 新增綜合題
+        { q: "下列哪一句最符合〈在黑暗中乘著音樂飛翔〉的寫作特色？", opts: ["用感覺描寫音樂，彷彿聽見聲音", "詳細說明樂理知識", "直接列出演奏技巧"], a: "用感覺描寫音樂，彷彿聽見聲音" }
+    ];
+
+
+    // 5. 修辭資料庫
+    const rhetoricData = [
+        { q: "「掌聲才如雷般的響起」運用了什麼修辭？", opts: ["譬喻", "擬人", "排比"], a: "譬喻" },
+        { q: "引用名言「上天為我們關上一道門...」是為了？", opts: ["增加字數", "支持觀點", "練習寫字"], a: "支持觀點" },
+        // 新增修辭題
+        { q: "「十根手指在黑白琴鍵上輕輕舞動。」主要使用哪一種修辭？", opts: ["疊字", "排比", "引用"], a: "疊字" }, // 依據題意選項調整，若強調「輕輕」則為疊字
+        { q: "「樂聲摸著黑四處流轉。」使用的修辭是？", opts: ["譬喻", "擬人", "誇飾"], a: "擬人" },
+        // 新增修辭是非
+        { q: "「輕輕舞動、深深迷住」使用了疊字修辭。", a: true },
+        { q: "「音樂引領他推開窗，飛向另一個世界。」把音樂當成人來寫(擬人)。", a: true },
+        { q: "「轟隆隆的火車聲、嘩啦啦的雨滴聲、歡笑聲」屬於排比。", a: true }
+    ];
+
+
+    const gameData = [
+        { 
+            type: "select", 
+            q: "關卡 1：找出課文中的「聲音描寫」", 
+            opts: ["七彩繽紛", "轟隆隆", "黑漆漆"], 
+            a: "轟隆隆",
+            hint: "找找看哪個詞有聲音的感覺？"
+        },
+        { 
+            type: "select", 
+            q: "關卡 2：黃裕翔在大賣場喜歡敲打什麼當樂器？", 
+            opts: ["西瓜", "鍋碗瓢盆", "電視機"], 
+            a: "鍋碗瓢盆",
+            hint: "在廚具區會看到什麼？"
+        },
+        { 
+            type: "select", 
+            q: "關卡 3：「音樂無所不在」這句話用了什麼修辭來強調？", 
+            opts: ["設問", "引用", "誇飾"], 
+            a: "引用",
+            hint: "這是引用誰說過的話呢？"
+        }
+    ];
+
+
+    // --- 應用程式邏輯 ---
+
+
+    function startApp() {
+        const name = document.getElementById('studentName').value.trim();
+        if (!name) return alert("請輸入名字喔！");
+        
+        currentUser = name;
+        document.getElementById('displayUser').textContent = name;
+        document.getElementById('displayUser').className = "bg-indigo-100 px-5 py-2 rounded-full text-lg font-bold text-indigo-600 border-2 border-indigo-200";
+        document.getElementById('loginModal').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        document.getElementById('mainApp').classList.add('pop-in');
+        
+        // 初始化各單元
+        initVocab();
+        initTypo();
+        initMatch();
+        initComp();
+        initRhetoric();
+        initGame();
+    }
+
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+        document.getElementById('view-' + tabId).classList.remove('hidden');
+        document.getElementById('view-' + tabId).classList.add('pop-in');
+        
+        // 滾動到內容區
+        document.getElementById('contentArea').scrollIntoView({behavior: 'smooth', block: 'start'});
+    }
+
+
+    function showFeedback(msg, type) {
+        const toast = document.getElementById('feedbackToast');
+        const text = document.getElementById('feedbackText');
+        const icon = document.getElementById('feedbackIcon');
+        
+        toast.className = `fixed bottom-16 left-1/2 transform -translate-x-1/2 px-8 py-4 rounded-full shadow-2xl z-50 transition-all duration-300 translate-y-0 opacity-100 ${type === 'success' ? 'bg-green-600' : 'bg-orange-500'} text-white text-xl font-bold border-2 border-white`;
+        
+        icon.innerHTML = type === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-lightbulb"></i>';
+        text.innerText = msg;
+
+
+        setTimeout(() => {
+            toast.classList.add('opacity-0', 'translate-y-10');
+        }, 2000);
+    }
+
+
+    // --- 各單元實作 ---
+
+
+    // 1. 字詞與成語 (Vocab & Idioms)
+    function initVocab() {
+        const container = document.getElementById('vocab-container');
+        let currentIdx = 0;
+        let correctCount = 0;
+
+
+        function render() {
+            if (currentIdx >= vocabData.length) {
+                container.innerHTML = `<div class="text-3xl font-bold text-indigo-600 mb-6">🎉 完成挑戰！<br>答對 ${correctCount}/${vocabData.length} 題</div>
+                <button onclick="initVocab()" class="mt-4 bg-gray-200 px-8 py-3 rounded-xl text-xl font-bold hover:bg-gray-300">再玩一次</button>`;
+                saveRecord('字詞與成語', correctCount, vocabData.length - correctCount);
+                return;
+            }
+            const q = vocabData[currentIdx];
+            
+            // 動態調整字體大小，如果選項字數多(如成語)，字體變小
+            const isLongText = q.opts.some(opt => opt.length > 2);
+            const btnClass = isLongText 
+                ? "btn-custom bg-white border-4 border-blue-200 text-2xl w-48 h-32 rounded-3xl hover:bg-blue-50 font-bold text-blue-700 mx-2"
+                : "btn-custom bg-white border-4 border-blue-200 text-5xl w-32 h-32 rounded-3xl hover:bg-blue-50 font-bold text-blue-700";
+
+
+            container.innerHTML = `
+                <div class="text-3xl mb-10 font-bold bg-blue-50 p-8 rounded-2xl inline-block border-4 border-blue-100 leading-relaxed">${q.q}</div>
+                <div class="flex flex-wrap justify-center gap-6">
+                    ${q.opts.map(opt => `<button onclick="checkVocab('${opt}', '${q.a}')" class="${btnClass}">${opt}</button>`).join('')}
+                </div>
+            `;
+        }
+
+
+        window.checkVocab = (ans, correct) => {
+            if (ans === correct) {
+                showFeedback("答對了！", "success");
+                correctCount++;
+            } else {
+                showFeedback("再想一想喔！", "hint");
+            }
+            currentIdx++;
+            setTimeout(render, 800);
+        };
+        render();
+    }
+
+
+    // 2. 改錯字
+    function initTypo() {
+        const container = document.getElementById('typo-container');
+        container.innerHTML = '';
+        let correctCount = 0;
+        let attempts = 0;
+
+
+        typoData.forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.className = "bg-gray-50 p-6 rounded-2xl border-2 border-gray-200 tracking-wider";
+            
+            // 構建句子，每個字都是可點擊的
+            let html = '';
+            for(let i=0; i<item.sent.length; i++) {
+                html += `<span class="typo-char" onclick="checkTypo(this, ${idx}, ${i})">${item.sent[i]}</span>`;
+            }
+            div.innerHTML = html;
+            div.id = `typo-row-${idx}`;
+            container.appendChild(div);
+        });
+
+
+        window.checkTypo = (span, itemIdx, charIdx) => {
+            const q = typoData[itemIdx];
+            if (charIdx === q.wrongIndex) {
+                span.innerText = q.correct;
+                span.className = "text-red-600 font-bold border-b-4 border-red-500 pb-1 mx-1 px-2 bg-red-50 rounded text-3xl";
+                span.onclick = null; // 移除點擊事件
+                showFeedback("太棒了！小偵探找到錯字了！", "success");
+                
+                // 顯示解釋
+                const explain = document.createElement('div');
+                explain.className = "mt-4 text-lg text-gray-600 bg-white p-3 rounded-xl shadow-sm inline-block border border-gray-100";
+                explain.innerHTML = `<i class="fas fa-info-circle text-blue-400 mr-2"></i> 原字「${q.wrongChar}」是錯誤的，應改為「${q.correct}」。`;
+                document.getElementById(`typo-row-${itemIdx}`).appendChild(explain);
+
+
+                correctCount++;
+                if(correctCount === typoData.length) saveRecord('錯字偵探', correctCount, attempts);
+            } else {
+                span.classList.add('wrong-anim');
+                setTimeout(() => span.classList.remove('wrong-anim'), 500);
+                showFeedback("這裡沒有錯字喔，再找找看！", "hint");
+                attempts++;
+            }
+        };
+    }
+
+
+    // 3. 詞語配對 (Click to Match)
+    function initMatch() {
+        const container = document.getElementById('match-game');
+        // 洗牌
+        const shuffled = [...matchData].sort(() => Math.random() - 0.5);
+        container.innerHTML = '';
+        let selected = null;
+        let matches = 0;
+        let errors = 0;
+
+
+        shuffled.forEach(item => {
+            const btn = document.createElement('button');
+            // 動態字體：如果字數多(如成語、修辭句)，字體稍微縮小
+            const fontSize = item.text.length > 4 ? "text-xl" : "text-2xl";
+            
+            btn.className = `btn-custom bg-white border-2 border-purple-200 text-gray-700 p-4 rounded-2xl font-bold ${fontSize} hover:bg-purple-50 min-h-[100px] flex items-center justify-center`;
+            btn.innerText = item.text;
+            btn.dataset.id = item.id;
+            btn.dataset.pair = item.pair;
+            
+            btn.onclick = () => {
+                if (selected === btn) { // 取消選取
+                    btn.classList.remove('match-selected');
+                    selected = null;
+                    return;
+                }
+
+
+                if (!selected) {
+                    selected = btn;
+                    btn.classList.add('match-selected');
+                } else {
+                    // 檢查配對
+                    if (selected.dataset.pair == btn.dataset.id) {
+                        // 配對成功
+                        selected.classList.add('correct-anim', 'bg-green-200', 'border-green-500');
+                        btn.classList.add('correct-anim', 'bg-green-200', 'border-green-500');
+                        showFeedback("配對成功！", "success");
+                        
+                        const s = selected;
+                        const b = btn;
+                        setTimeout(() => {
+                            s.classList.add('match-solved');
+                            b.classList.add('match-solved');
+                        }, 500);
+                        
+                        matches++;
+                        selected = null;
+                        if(matches === matchData.length / 2) {
+                            saveRecord('詞語配對', matches, errors);
+                            setTimeout(() => {
+                                container.innerHTML = `<div class="col-span-2 text-center text-3xl font-bold text-purple-600 p-8">🎉 全部配對完成！</div>`;
+                            }, 1000);
+                        }
+                    } else {
+                        // 配對失敗
+                        btn.classList.add('wrong-anim');
+                        selected.classList.add('wrong-anim');
+                        showFeedback("這兩個不是一對喔！", "hint");
+                        errors++;
+                        setTimeout(() => {
+                            btn.classList.remove('wrong-anim');
+                            selected.classList.remove('wrong-anim', 'match-selected');
+                            selected = null;
+                        }, 800);
+                    }
+                }
+            };
+            container.appendChild(btn);
+        });
+    }
+
+
+    // 4. 理解 & 5. 修辭 (Generic Render)
+    function renderQuiz(containerId, data, title, typeName) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        let correct = 0;
+        let done = 0;
+
+
+        data.forEach((q, idx) => {
+            const div = document.createElement('div');
+            div.className = "mb-6 bg-gray-50 p-6 rounded-2xl text-left border-2 border-gray-200";
+            let optsHtml = '';
+            
+            if (q.a === true || q.a === false) { // True/False
+                optsHtml = `
+                    <div class="mt-4 flex gap-4">
+                        <button class="btn-custom bg-green-100 text-green-700 w-20 h-20 text-3xl rounded-full hover:bg-green-200 border-2 border-green-300" onclick="checkGen(this, ${q.a}, true, ${idx})">○</button>
+                        <button class="btn-custom bg-red-100 text-red-700 w-20 h-20 text-3xl rounded-full hover:bg-red-200 border-2 border-red-300" onclick="checkGen(this, ${q.a}, false, ${idx})">✕</button>
+                    </div>
+                `;
+            } else { // Multiple Choice
+                optsHtml = `<div class="mt-4 flex flex-wrap gap-3">` + q.opts.map(opt => 
+                    `<button class="btn-custom bg-white border-2 border-gray-300 px-6 py-3 rounded-xl hover:bg-gray-100 text-xl font-bold" onclick="checkGen(this, '${q.a}', '${opt}', ${idx})">${opt}</button>`
+                ).join('') + `</div>`;
+            }
+
+
+            div.innerHTML = `<p class="font-bold mb-2 text-2xl text-gray-800 leading-snug">${idx+1}. ${q.q}</p><div id="ans-area-${containerId}-${idx}">${optsHtml}</div>`;
+            container.appendChild(div);
+        });
+
+
+        // Closure to keep scope
+        window[`done_${containerId}`] = 0;
+        window[`correct_${containerId}`] = 0;
+        
+        // Dynamic check function
+        window.checkGen = (btn, correctVal, userVal, idx) => {
+            const area = btn.parentElement.nodeName === 'DIV' ? btn.parentElement : btn.parentElement; // handle structure diff
+            // Disable all buttons in this question
+            let btns;
+            if(area.id.startsWith('ans-area')) {
+                 btns = area.querySelectorAll('button');
+            } else {
+                 btns = area.parentElement.querySelectorAll('button');
+            }
+            
+            btns.forEach(b => b.disabled = true);
+
+
+            if (userVal === correctVal) {
+                btn.className = "bg-green-500 text-white px-6 py-3 rounded-xl font-bold shadow-md text-xl";
+                btn.innerHTML += ' ✔️';
+                showFeedback("答對了！", "success");
+                window[`correct_${containerId}`]++;
+            } else {
+                btn.className = "bg-red-500 text-white px-6 py-3 rounded-xl font-bold shadow-md text-xl";
+                showFeedback("可惜答錯了", "hint");
+            }
+            window[`done_${containerId}`]++;
+            
+            if (window[`done_${containerId}`] === data.length) {
+                saveRecord(typeName, window[`correct_${containerId}`], data.length - window[`correct_${containerId}`]);
+            }
+        };
+    }
+
+
+    function initComp() { renderQuiz('comp-container', compData, '課文理解', '課文理解'); }
+    function initRhetoric() { renderQuiz('rhetoric-container', rhetoricData, '修辭', '修辭互動'); }
+
+
+    // 6. 遊戲
+    function initGame() {
+        const stage = document.getElementById('game-stage');
+        let level = 0;
+        let score = 0;
+
+
+        function renderLevel() {
+            if (level >= gameData.length) {
+                stage.innerHTML = `
+                    <div class="text-8xl mb-6">🏆</div>
+                    <h3 class="text-4xl font-bold text-indigo-700 mb-4">任務完成！</h3>
+                    <p class="text-2xl text-gray-500">你已經成為聲音魔法師了！</p>
+                    <div class="mt-8 font-bold text-3xl text-yellow-600 bg-yellow-50 px-8 py-4 rounded-2xl">最終得分: ${score}</div>
+                `;
+                saveRecord('闖關遊戲', score/10, gameData.length - (score/10));
+                return;
+            }
+
+
+            const q = gameData[level];
+            document.getElementById('game-level').innerText = level + 1;
+            
+            stage.innerHTML = `
+                <div class="bg-indigo-50 p-8 rounded-[2rem] w-full max-w-2xl pop-in border-4 border-white shadow-lg">
+                    <p class="text-2xl font-bold mb-8 text-indigo-900 leading-relaxed">${q.q}</p>
+                    <div class="grid gap-4">
+                        ${q.opts.map(opt => `
+                            <button onclick="checkGameAns('${opt}', '${q.a}')" class="btn-custom w-full bg-white border-2 border-indigo-100 py-4 rounded-xl font-bold text-indigo-600 text-2xl hover:bg-indigo-500 hover:text-white transition">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+
+        window.checkGameAns = (ans, correct) => {
+            if (ans === correct) {
+                score += 10;
+                document.getElementById('game-score').innerText = score;
+                showFeedback("答對了！晉級下一關！", "success");
+                level++;
+                setTimeout(renderLevel, 1000);
+            } else {
+                showFeedback(gameData[level].hint, "hint");
+            }
+        };
+        renderLevel();
+    }
+
+
+    // --- 延伸任務 ---
+    function submitExtension() {
+        const val = document.getElementById('extend-answer').value;
+        if(val) {
+            saveRecord('延伸任務', 1, 0); // 只要提交就算完成
+            alert("想法已提交！謝謝你的分享 ❤️");
+            document.getElementById('extend-answer').value = '';
+        }
+    }
+
+
+    // --- 資料儲存與記錄 ---
+    
+    function saveRecord(moduleName, correct, wrong) {
+        const record = {
+            time: new Date().toLocaleString(),
+            name: currentUser,
+            module: moduleName,
+            correct: correct,
+            wrong: wrong,
+            score: Math.round((correct / (correct + wrong)) * 100) || 100
+        };
+
+
+        // 1. 存入 LocalStorage (學生端記錄)
+        let history = JSON.parse(localStorage.getItem('musicFlyHistory') || '[]');
+        history.unshift(record);
+        localStorage.setItem('musicFlyHistory', JSON.stringify(history));
+
+
+        // 2. 傳送至 Google Sheet
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors', // 重要：避免 CORS 錯誤
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(record)
+        }).then(() => {
+            console.log("Sent to Google Sheet");
+        }).catch(err => console.error(err));
+    }
+
+
+    function showHistory() {
+        if (!currentUser) return alert("請先登入喔！");
+        
+        const history = JSON.parse(localStorage.getItem('musicFlyHistory') || '[]');
+        const list = document.getElementById('historyList');
+        const modal = document.getElementById('historyModal');
+        
+        list.innerHTML = '';
+        if (history.length === 0) {
+            list.innerHTML = '<p class="text-center text-gray-500 text-xl py-8">目前還沒有記錄，快去挑戰吧！</p>';
+        } else {
+            // 過濾當前使用者的記錄
+            const myHistory = history.filter(r => r.name === currentUser);
+            myHistory.forEach(r => {
+                const div = document.createElement('div');
+                div.className = "bg-gray-50 p-4 rounded-xl border-l-8 border-indigo-400 flex justify-between items-center";
+                div.innerHTML = `
+                    <div>
+                        <div class="font-bold text-gray-800 text-xl">${r.module}</div>
+                        <div class="text-base text-gray-500">${r.time}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold ${r.score >= 80 ? 'text-green-600' : 'text-orange-500'}">${r.score}分</div>
+                        <div class="text-sm text-gray-500">對${r.correct} / 錯${r.wrong}</div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+        modal.classList.remove('hidden');
+    }
+</script>
+</body>
+</html>
